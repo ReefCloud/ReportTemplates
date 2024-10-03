@@ -1,0 +1,539 @@
+---
+title: "Benthic Taxonomy Assessment"
+subtitle: "ReefCloud Training - Cu Lao Cham MPA"
+date: Sys.date()
+author: "Australian Insitute of Marine Science"
+crossref:
+  lof-title: "List of Figures"
+format: 
+  PrettyPDF-pdf:
+    fig-pos: "H"
+output-file: "TrainingAccuracyReport_CuLaoCham-training"
+output-ext: "pdf"
+mainfont: Arial
+engine: knitr
+execute:
+  eval: true
+---
+
+## Introduction
+
+This report summarises an assessment of trainees' accuracy in identifying benthic taxa from images during a training course on Coral Reef Monitoring using ReefCloud. The Australian Institute of Marine Science developed and taught the training to upskill scientists and reef managers in monitoring coral reefs and contribute to standardising coral reef monitoring worldwide.
+
+During the training, participants were tasked to identify benthic taxa from a selection of images previously annotated by AIMS scientists. This task was done before and after AIMS's training on genus-level taxonomy.
+
+## Methodology
+
+The training was delivered in Cu Lao Cham for two days to 14 participants from the following institutions across Vietnam:
+
+-   Management Board of Cu Lao Cham Marine Protected Area
+-   Management Board of Ly Son Marine Protected Area
+-   Management Board of Bach Long Vi Marine Protected Area
+-   Management Board of Con Co Marine Protected Area
+-   Hue University
+-   Institute of Oceanography
+
+The results below show the average accuracy of trainees in identifying benthos when compared against AIMS annotated images. Each participant was tasked with labelling the taxonomic identity of 5 points per image across ten images. To label each point, trainees were provided with a labelset that describes a taxonomic library of common benthic taxa in coral reefs (see Appendix 1).
+
+A dedicated training was tailored to the images collected from Cu Lao Cham during practical training sessions, and the following training resources were used to facilitate the training:
+
+-   Coral Finder
+-   PowerPoint presentations developed for this training, [Available Here](https://reefcloud.github.io/resources/Use-RC.html).
+
+Accuracy (@eq-accuracy) estimated by comparing all trainee's annotations to AIMS data. Accuracy is calculated per label as the total number of True Positive classifications against the total number of points annotated by AIMS for the given label.
+
+$$
+Acc_\text{(label)}=\frac{\text{TP}_\text{(trainee)}}{\text{Total}_\text{(AIMS)}}\times 100
+$$ {#eq-accuracy}
+
+Accuracy measures how often trainees predicted the outcome correctly relative to the total number of predictions by AIMS, where **True Positive (TP)** is the number of points correctly classified by the trainees.
+
+```{r}
+#| label: PrepareWorkspace
+#| echo: false
+#| include: false
+
+
+library(caret)
+library(tidyverse)
+library(ggthemes)
+library(gt)
+
+##Plot theme
+theme_Publication <- function(base_size=14, base_family="sans") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family=base_family)
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(0.8), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+
+##Load data
+fdir<-"../data/CuLaoCham_training/"
+
+pre <- read.csv(file.path(fdir,"Pre-training_annotations.csv"), 
+                header = TRUE) |> 
+  select(survey_id, 
+         survey_title, 
+         survey_transect_number, 
+         image_name, 
+         point_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  mutate(img_num = str_extract(image_name, "(\\d)+")) |> 
+  mutate(image_num = paste(img_num, sep="_", point_num)) |> 
+  select(-img_num, -point_num)
+
+
+post <- read.csv(file.path(fdir,"Post-training_annotations.csv"),  
+                header = TRUE) |> 
+  select(survey_id, 
+         survey_title, 
+         survey_transect_number, 
+         image_name, 
+         point_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  mutate(img_num = str_extract(image_name, "(\\d)+")) |> 
+  mutate(image_num = paste(img_num, sep="_", point_num)) |> 
+  select(-img_num, -point_num)
+
+labelset <- read.csv(file.path(fdir,"Labelset.csv"), 
+                     header =  TRUE) |> 
+  rename(point_human_classification = CODE,
+         classification_label = DESCRIPTION) |> 
+  select(point_human_classification, classification_label)
+
+```
+
+```{r}
+#| label: checkCompletion
+#| echo: false
+#| warning: false
+#| include: false
+
+
+#We calculate how many points are annoated for each survey/person and remove surveys with no annotations at all.
+
+pre.check <- pre |>  
+  group_by(survey_title)  |> 
+  count(point_human_classification == "")  |> 
+  pivot_wider(names_from = 2, values_from = 3)  |> 
+  rename(annotated = 2, not_annotated = 3) |> 
+  filter(annotated != "NA") 
+
+post.check <- post |>  
+  group_by(survey_title)  |> 
+  count(point_human_classification == "")  |> 
+  pivot_wider(names_from = 2, values_from = 3)  |> 
+  rename(annotated = 2, not_annotated = 3) |> 
+  filter(annotated != "NA") 
+
+
+#Then we prepare the right classifications for each image and point. In this case the survey with the confirmed annotations was named "AIMS".
+pre <- pre |> 
+  filter(point_human_classification != "")
+
+pre.right <- pre |> 
+  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
+  select(point_human_classification, 
+         point_human_group_code, 
+         image_num) |> 
+  rename(right_classification = point_human_classification, 
+         right_group_code = point_human_group_code)
+
+
+post <- post |> 
+  filter(point_human_classification != "")
+
+post.right <- post |> 
+  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
+  select(point_human_classification, 
+         point_human_group_code, 
+         image_num) |> 
+  rename(right_classification = point_human_classification, 
+         right_group_code = point_human_group_code)
+
+
+#We then calculate the number of right classifications and group codes.
+
+pre.response <- pre  |> 
+  filter(survey_title != "AIMS") |> 
+  filter(survey_title %in% pre.check$survey_title) |> 
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  full_join(pre.right, by = "image_num") 
+
+pre.results <- pre.response |>  
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         right_classification, 
+         point_human_group_code,
+         right_group_code) |> 
+  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
+         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
+
+pre.right.check <- pre.right |> 
+  select(-image_num) |> 
+  group_by(right_classification) |> 
+  mutate(count_right_classification = n()) |> 
+  ungroup() |> 
+  group_by(right_group_code) |> 
+  mutate(count_right_group_code = n()) |> 
+  ungroup()
+
+post.response <- post  |> 
+  filter(survey_title != "AIMS") |> 
+  filter(survey_title %in% post.check$survey_title) |> 
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  left_join(post.right) 
+
+post.results <- post.response |>  
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         right_classification, 
+         point_human_group_code,
+         right_group_code) |> 
+  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
+         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
+
+post.right.check <- post.right |> 
+  select(-image_num) |> 
+  group_by(right_classification) |> 
+  mutate(count_right_classification = n()) |> 
+  ungroup() |> 
+  group_by(right_group_code) |> 
+  mutate(count_right_group_code = n()) |> 
+  ungroup()
+
+```
+
+```{r}
+#| label: calculateClassificationAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+
+#To prepare the data for graphing, we calculate the accuracy of the annotations and group codes.
+
+pre.results.class <- pre.results  |> 
+  select(survey_title,
+         right_classification,
+         check_classification) |> 
+  inner_join(pre.right.check |>  
+               select(right_classification, count_right_classification)) |> 
+  unique() |> 
+  mutate(accuracy_classification = check_classification/count_right_classification*100, 
+         type = "Pre")
+
+post.results.class <- post.results  |> 
+  select(survey_title,
+         right_classification,
+         check_classification) |> 
+  inner_join(post.right.check |>  
+               select(right_classification, count_right_classification)) |> 
+  unique() |> 
+  mutate(accuracy_classification = check_classification/count_right_classification*100,
+        type = "Post")
+
+results.class <- pre.results.class |> 
+  rbind(post.results.class) |> 
+  rename(classification = right_classification, classifications_annotated = check_classification, total_right_classification = count_right_classification) |> 
+  pivot_longer(cols = c("classifications_annotated", "total_right_classification", "accuracy_classification"), 
+               names_to = "accuracy",
+               values_to = "value") |> 
+  left_join(labelset, by = join_by(classification == point_human_classification))
+
+results.class$type <- factor(results.class$type, levels = c("Pre", "Post"))
+
+```
+
+```{r}
+#| label: calculateGroupCodeAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+pre.results.group <- pre.results  |> 
+  select(survey_title,
+         right_group_code,
+         check_group_code) |>
+  group_by(survey_title, right_group_code) |> 
+  mutate(check_group_code = sum(check_group_code)) |> 
+  inner_join(pre.right.check |>  
+               select(right_group_code, count_right_group_code)) |> 
+  unique() |> 
+  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
+         type = "Pre")
+
+post.results.group <- post.results  |> 
+  select(survey_title,
+         right_group_code,
+         check_group_code) |> 
+  group_by(survey_title, right_group_code) |> 
+  mutate(check_group_code = sum(check_group_code)) |> 
+  inner_join(post.right.check |>  
+               select(right_group_code, count_right_group_code)) |> 
+  unique() |> 
+  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
+         type = "Post")
+
+results.group <- pre.results.group |> 
+  rbind(post.results.group)  |> 
+  rename(group_code = right_group_code, group_codes_annotated = check_group_code, total_right_group_code = count_right_group_code) |> 
+  pivot_longer(cols = c("group_codes_annotated", "total_right_group_code", "accuracy_group_code"), 
+               names_to = "accuracy",
+               values_to = "value")
+
+results.group$type <- factor(results.group$type, levels = c("Pre", "Post"))
+```
+
+```{r}
+#| label: calculateOverallAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+pre.results.overall <- pre.results |> 
+  select(survey_title,
+         check_classification,
+         check_group_code) |> 
+  group_by(survey_title) |> 
+  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
+         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
+  inner_join(pre.check |>  
+               filter(survey_title != "AIMS")) |> 
+  select(-check_classification, -check_group_code, -not_annotated) |> 
+  unique() |> 
+  summarise(overall_accuracy_classification = overall_classification/annotated*100,
+         overall_accuracy_group_code = overall_group_code/annotated*100,
+         overall_annotated = annotated/50*100) |> 
+  mutate(type = "Pre")
+
+post.results.overall <- post.results  |> 
+  select(survey_title,
+         check_classification,
+         check_group_code) |> 
+  group_by(survey_title) |> 
+  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
+         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
+  inner_join(post.check |>  
+               filter(survey_title != "AIMS")) |> 
+  select(-check_classification, -check_group_code, -not_annotated) |> 
+  unique() |> 
+  summarise(overall_accuracy_classification = overall_classification/annotated*100,
+         overall_accuracy_group_code = overall_group_code/annotated*100,
+         overall_annotated = annotated/50*100) |> 
+  mutate(type = "Post")
+
+results.overall <- pre.results.overall |> 
+  rbind(post.results.overall) |> 
+  pivot_longer(cols = c("overall_accuracy_classification", "overall_accuracy_group_code", "overall_annotated"), 
+               names_to = "accuracy",
+               values_to = "value")
+
+results.overall$type <- factor(results.overall$type, levels = c("Pre", "Post"))
+```
+
+## Results and Interpretation
+
+### Overall Accuracy among trainees
+
+The figure below ( @fig-overallAccuracy) displays the overall capacity of participants to correctly identify benthic taxa before and after the training. For ecological interpretation, this figure is divided into two panels based on the taxonomic resolution: A) Genus-level taxonomy and B) Aggregated taxa into functional groups (e.g., Hard Coral, Soft Coral, Macroalgae, Turf Algae, Other Invertebrates, etc.).
+
+```{r}
+#| label: fig-overallAccuracy
+#| echo: false
+#| warning: false
+#| fig-cap: "Overall accuracy calculated before (Pre) and after (Post) training. Panel C shows the percentage of points annotated to show potential changes in sampling effort Pre and Post training." 
+
+results.overall<- results.overall |> 
+  mutate(group=case_when(
+    accuracy == "overall_accuracy_classification" ~ "A. Genus-level",
+    accuracy== "overall_accuracy_group_code" ~ "B. Functional Group",
+    .default ="C. Effort"
+  ),
+  group.txt=case_when(
+    accuracy == "overall_accuracy_classification" ~ "Genus-level",
+    accuracy== "overall_accuracy_group_code" ~ "Functional Group",
+    .default ="Effort"
+  )
+  )
+
+
+
+or<-ggplot(results.overall) + 
+  geom_boxplot(aes(x = type, y = value)) + 
+  facet_wrap( ~ group) + 
+  xlab("Comparisons") +
+  ylab("Percentage (%)") +
+  theme_Publication()
+
+
+or
+
+#auto text
+t.df<- results.overall |> group_by(type, group.txt) |> summarise(value=median(value)) |> filter(group.txt != "Effort") |> ungroup() 
+a= t.df|> filter(type=="Pre", group.txt=="Genus-level") |> pull(value) |> round(digits=2)
+min.txt=t.df |>filter(type=="Pre", group.txt=="Genus-level") |> slice_min(value) |> pull(group.txt)
+class.txt=case_when(min.txt=="Genus-level" ~ "higher", .default="lower")
+
+b <- t.df|> filter(type=="Post", group.txt=="Genus-level") |> pull(value) |> round(digits=2)
+
+
+```
+
+The results show that before the training, trainees could classify benthic taxa with an overall accuracy of `r a` %. However, when aggregating taxa into high-level functional groups (e.g., aggregating hard corals without paying attention to their taxonomic identify), the capacity of trainees to identify these groups is `r class.txt` @fig-accuracy_genus. Following the training, the genus-level accuracy increased to `r b` %.
+
+### Accuracy for aggregated taxa into high-level functional groups
+
+```{r}
+#| label: fig-GroupAccuracy
+#| echo: false
+#| warning: false
+#| fig-cap: "Accuracy of taxonomic identification calculated before (Pre) and after (Post) the training for labels aggregated to high-level functional groups. Each panel shows the calculated accuracy when aggregating genus-level annotations to functional groups (CA = Coraline Algae, Hard Coral = HC, MA = Macroalgae, SC = Soft Coral, SI = Sessile Invertebrates, SP = Sponges, TA = Tuef Algae and UN =  Indeterminate or Unknown"
+#| fig-height: 10
+#| fig-width: 12
+
+gr<-ggplot(results.group |>
+         filter(accuracy == "accuracy_group_code")) +
+  geom_boxplot(aes(x = type, y = value)) +
+  facet_wrap( ~ group_code) +
+  xlab("Comparisons") +
+  ylab("Percentage (%)") +
+  theme_Publication()
+
+gr
+```
+
+### Accuracy for benthic taxa at the highest resolution
+
+```{r}
+#| label: fig-accuracy_genus
+#| echo: false
+#| warning: false
+#| fig-cap: "Accuracy of taxonomic identification calculated before (Pre) and after (Post) the training for labels at the highest taxonomic-level recorded. Each panel shows the calculated accuracy for detected taxa"
+#| fig-height: 10
+#| fig-width: 14
+results.class |>  
+         filter(accuracy == "accuracy_classification") |> 
+  mutate( classification_label=str_replace(classification_label,"/", " / "),
+    classification_label=str_wrap(classification_label,width=20)) |> 
+  ggplot()+
+  geom_boxplot(aes(x = type, y = value)) + 
+  facet_wrap( ~classification_label) + 
+  xlab("Comparisons") +
+  ylab("Percentage (%)") +
+  theme_Publication()
+```
+
+### Most confounded taxa
+
+Comparing the identifications between trainees and AIMS, we calculated the probability of incorrect classifications across all taxa (i.e., False Positives and False Negatives) using a confusion matrix. The confusion matrix allows for calculation of the probability of confusion across labels. From this, we identified the most commonly confused or mistaken classification for a given taxon (@tbl-confusion). Looking through @tbl-confusion you can identify common mistakes that will help in improving the accuracy of classifications using the [reference materials](https://reefcloud.github.io/resources/Use-RC.html).
+
+```{r}
+#| label: tbl-confusion
+#| echo: false
+#| warning: false
+#| tbl-cap: Commonly confused taxa after completing the training
+post.annotations.levels <- post |> 
+  select(point_human_classification, point_human_group_code) |> 
+  unique()
+  
+post.annotations.levels$point_human_group_code <- factor(post.annotations.levels$point_human_group_code, levels =
+                                                          c("HC", "BL_HC", "SC", "SP", "SI", "MA", "TA", "CA", "MI", "CM", "SS", "UN"))
+
+post.annotations.levels <- post.annotations.levels |> 
+  group_by(point_human_group_code) |> 
+  arrange(point_human_group_code, .by.group = TRUE)
+
+post.right.annotations <- factor(post.results$right_classification, levels = post.annotations.levels$point_human_classification)
+post.human.annotations <- factor(post.results$point_human_classification, levels = post.annotations.levels$point_human_classification)
+
+post.confusion <- caret::confusionMatrix(post.right.annotations, post.human.annotations)
+
+post.confusion.table <- post.confusion$table
+
+diag(post.confusion.table)=NA
+
+post.confusion.labels <- as.data.frame(post.confusion$byClass) |> 
+  cbind(apply(post.confusion.table, 1, function(row) colnames(post.confusion.table)[which.max(row)])) |> 
+  select(3:4, 7, 12) |> 
+  rownames_to_column(var =  "class") |> 
+  mutate(class=str_remove(class, "Class: ")) |> 
+  rename("HighestConfusedLabel" = 5) |> 
+  left_join(post.annotations.levels |>  
+              select(point_human_classification,
+                     point_human_group_code) |> 
+              unique(),
+            by = join_by(class == point_human_classification)) |> 
+  rename(FG = point_human_group_code)
+
+post.confusion.labels<- post.confusion.labels |> 
+  select(class, HighestConfusedLabel, FG) |> 
+  left_join(labelset |> rename(class=point_human_classification)) |> 
+  select(-class) |> 
+  rename(Taxa=classification_label, "Functional Group" = FG) |> 
+  left_join(labelset |> rename(HighestConfusedLabel=point_human_classification)) |>
+  rename("Often Confused With..."=classification_label) |> 
+  select("Functional Group", Taxa,"Often Confused With..." )
+
+
+
+post.confusion.labels |> 
+  gt(groupname_col = "Functional Group",
+      
+     ) 
+  
+
+```
+
+## Recommendations
+
+-   The taxonomic identification of coral reef benthos only improves with practice. We recommend continuing to identify taxa from images and collaborating with experts in your region to validate annotations and improve accuracy.
+-   Revisit your accuracy scores over time using the code provided.
+-   Annotate images from different habitats to improve your identification skills. Coral reef benthos vary in appearance (e.g., shape, colour, size) across different habitats (e.g., inshore, offshore, turbidity, wave exposure).
+-   Revisit your annotations with colleagues at your institution. Often, taxonomic identification from images improves by revisiting the classification among your group, which will provide different perspectives.
+-   Defining a threshold for expected accuracy to ensure the ecological integrity of monitoring is difficult and case-specific. However, we recommend maintaining an overall taxonomic accuracy of over 80% to provide a robust assessment of change in coral reef benthic communities over time. Such accuracy should be evaluated regularly to maintain the value of monitoring data in informing management actions.
+-   Depending on the purpose of monitoring, i.e., the essential questions from management that monitoring is intended to answer, the taxonomic identification from images should be refined to ensure high accuracy in the identification of critical taxa. For example, suppose local management plans aim to preserve the condition of ecosystem engineers of coral reefs to maintain ecological resilience. In that case, special attention should be paid to the accuracy of the taxonomic identification of hard corals. Alternatively, management authorities may be concerned about invasive species. Therefore, monitoring should maintain high accuracy in identifying those potential threat species.

@@ -1,0 +1,160 @@
+---
+title: "Benthic Taxonomy Assessment"
+subtitle: "ReefCloud Training - Cu Lao Cham MPA"
+date: Sys.date()
+author: "Australian Insitute of Marine Science"
+crossref:
+  lof-title: "List of Figures"
+format: PrettyPDF-pdf
+output-file: "TrainingAccuracyReport_CuLaoCham-training"
+output-ext: "pdf"
+output-dir: "..\vignettes"
+  
+mainfont: Arial
+---
+
+## Introduction
+
+This report summarises an assessment of trainees' accuracy in identifying benthic taxa from images during a training course on Coral Reef Monitoring using ReefCloud. The Australian Institute of Marine Science developed and taught the training to upskill scientists and reef managers in monitoring coral reefs and contribute to standardising coral reef monitoring worldwide.
+
+During the training, participants were tasked to identify benthic taxa from a selection of images previously annotated by AIMS scientists. This task was done before and after AIMS's training on genus-level taxonomy.
+
+## Methodology
+
+The training was delivered in Cu Lao Cham for two days to 14 participants from the following institutions across Vietnam:
+
+-   Management Board of Cu Lao Cham Marine Protected Area
+-   Ly Son Marine Protected Area Authority
+-   Management Board of Bach Long Vi Marine Protected Area
+-   Management Board of Con Co Marine Protected Area
+-   Hue University
+-   Institute of Oceanography
+
+The results below show the average accuracy of trainees in identifying benthos when compared against AIMS annotated images. Each participant was tasked with labelling the taxonomic identity of 5 points per image across ten images. To label each point, trainees were provided with a labelset that describes a taxonomic library of common benthic taxa in coral reefs (see Appendix 1).
+
+A dedicated training was tailored to the images collected from Cu Lao Cham during practical training sessions, and the following training resources were used to facilitate the training:
+
+-   Coral Finder
+-   PowerPoint presentations developed for this training, [Available Here](www.reefcloud.ai).
+
+Accuracy (@eq-accuracy) estimated using the F1 Score when comparing all trainee's annotations to AIMS data:
+
+$$
+F_{1}=\frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+$$ {#eq-accuracy}
+
+The F1 score measures how often trainees predicted the outcome correctly relative to the total number of predictions. This score is calculated based on the proportion of correct annotations against all positive detections of a given taxon (Precision, @eq-precision) and against all annotations (Recall or sensitivity, @eq-recall)
+
+$$
+Precision = \frac{TP}{TP + FP}
+$$ {#eq-precision}
+
+$$
+Recall = \frac{TP}{TP + FN}
+$$ {#eq-recall}
+
+Where:
+
+-   **True Positive (TP)**: a correct classification from trainees when compared to AIMS annotations
+
+-   **False Positive (FP)**: an incorrect classification from trainees when compared to AIMS annotations
+
+-   **True Negative (TN)**: The label was not in the image, and the trainee did not identify the given label: "There was nothing there, and the trainee didn't think there was something there".
+
+-   **False Negative (FN)**: The label was in the image, and the trainee did not identify it: "There was something there, but the trainee missed it."
+
+```{r}
+
+
+#| label: PrepareWorkspace
+#| echo: false
+library(caret)
+library(tidyverse)
+fdir<-"data/NuiChua_training/"
+
+
+#Load data
+pre <- read.csv("data/Pre-training_annotations.csv"))
+, 
+                header = TRUE) |> 
+  select(survey_id, 
+         survey_title, 
+         survey_transect_number, 
+         image_name, 
+         point_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  mutate(img_num = str_extract(image_name, "(\\d)+")) |> 
+  mutate(image_num = paste(img_num, sep="_", point_num)) |> 
+  select(-img_num, -point_num)
+
+
+post <- read.csv("../data/Vietnam_NuiChua_Post.csv", 
+                header = TRUE) |> 
+  select(survey_id, 
+         survey_title, 
+         survey_transect_number, 
+         image_name, 
+         point_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  mutate(img_num = str_extract(image_name, "(\\d)+")) |> 
+  mutate(image_num = paste(img_num, sep="_", point_num)) |> 
+  select(-img_num, -point_num)
+
+labelset <- read.csv("../data/Vietnam_labelset.csv", 
+                     header =  TRUE) |> 
+  rename(point_human_classification = CODE,
+         classification_label = DESCRIPTION) |> 
+  select(point_human_classification, classification_label)
+```
+
+## Results and Interpretation
+
+### Overall Accuracy among trainees
+
+The figure below ( @fig-overall) displays the overall capacity of correctly identifying benthic taxa before and after the training. For ecological interpretation, this figure is divided into two pannels based on the taxonomic resolution: A) Genus-level taxonomy and B) Aggregated taxa into functional groups (e.g., Hard Coral, Soft Coral, Macroalgae, Turf Algae, Other Invertebrates, etc)
+
+```{r}
+#| echo: false
+#| label: fig-overall
+#| fig-cap: "Figure" 
+#| fig-subcap:
+#|   - "A"
+#|   - "B" 
+#| layout-ncol: 2
+#| 
+
+
+
+
+```
+
+The results show Blah, Blah Blah
+
+### Accuracy for aggregated taxa into high-level functional groups
+
+```{r}
+#| echo: false
+#| label: fig-plots
+#| fig-cap: "Plots" 
+#| fig-subcap:
+#|   - "Plot 1"
+#|   - "Plot 2" 
+#| layout-ncol: 2
+#| 
+2 * 2
+```
+
+### Accuracy for benthic taxa at the highest resolution
+
+### Most confounded taxa
+
+## Recommendations
+
+-   The taxonomic identification of coral reef benthos only improves with practice. We recommend continuing to identify taxa from images and collaborating with experts in your region to validate annotations and improve accuracy.
+-   Revisit your accuracy scores over time using the code provided.
+-   Annotate images from different habitats to improve your identification skills. Coral reef benthos vary in appearance (e.g., shape, colour, size) across different habitats (e.g., inshore, offshore, turbidity, wave exposure).
+-   Revisit your annotations with colleagues at your institution. Often, taxonomic identification from images improves by revisiting the classification among your group, which will provide different perspectives.
+-   Defining a threshold for expected accuracy to ensure the ecological integrity of monitoring is difficult and case-specific. However, we recommend maintaining an overall taxonomic accuracy of over 80% to provide a robust assessment of change in coral reef benthic communities over time. Such accuracy should be evaluated regularly to maintain the value of monitoring data in informing management actions.
+-   Depending on the purpose of monitoring, i.e., the essential questions from management that monitoring is intended to answer, the taxonomic identification from images should be refined to ensure high accuracy in the identification of critical taxa. For example, suppose local management plans aim to preserve the condition of ecosystem engineers of coral reefs to maintain ecological resilience. In that case, special attention should be paid to the accuracy of the taxonomic identification of hard corals. Alternatively, management authorities may be concerned about invasive species. Therefore, monitoring should maintain high accuracy in identifying those potential threat species.
