@@ -1,0 +1,393 @@
+---
+title: "Overall condition of coral reefs habitats"
+subtitle: "[INSERT REGION NAME and EVALUATION YEARS]"
+date: Sys.date()
+author: 
+  - name: "Manuel Gonzalez-Rivero"
+    affiliation: "Australian Institute of Marine Science"
+    orcid: "0000-0002-1825-0097" # Replace with the actual ORCID ID
+  - name: "[INSERT AUTHOR]"
+    affiliation: "[INSERT AFFILIATION]"
+    orcid: "[INSERT ORCID ID]" # Replace with the actual ORCID ID
+crossref:
+  lof-title: "List of Figures"
+format: 
+  PrettyPDF-pdf:
+    fig-pos: "H"
+output-file: "Reef_Habitat_Condition_Report_[INSERT REGION NAME]"
+output-ext: "pdf"
+mainfont: Arial
+engine: knitr
+execute:
+  eval: true
+---
+
+## Introduction
+
+[@Sam Please insert a generic introduction statement]
+
+[COMPLETE INTRODUCTION]
+
+## Methodology
+
+[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+
+## Study Area
+```{r}
+#| label: Study_Area
+#| echo: false
+#| include: false
+source("install_packages.R")
+library(tidyverse)
+library(sf)
+source("ReefCloud_API.R")
+source("plotting_functions.R")
+
+
+## Get tier ID
+#In the ReefCloud Dashboard a tier is a spatial polygon that defines the boundaries of a region. 
+#There are 4 tier type in ReefCloud:
+#* Tier 2= Exclusive Economic Zones (EEZ) or Large Marine Ecosystems for very large countries (e.g., USA, Australia)
+#* Tier 3= Marine Ecoregions of the World (Spalding 2007. https://academic.oup.com/bioscience/article-abstract/57/7/573/238419?redirectedFrom=fulltext)
+# * Tier 4= Administrative Boundaries. Usually, this refer to geopolitical boundaries of conties, states or provinces sourced from Open Street Map. In some cases, it can refere to management areas (e.g., Natural Resource Management Regions in Australia)
+
+# To find the Tier ID you are interested on for this report:
+# 1. Go to www.reefcloud.ai/dashboard. 
+# 2. Navegate to the region you are interested on using the map or the search field
+# 3. Extract the last digits from the url. For example, the case below extract the tier 4 (level = 4) from Vietnam, which is 41313
+# https://reefcloud.ai/dashboard/?x=109.08514&y=12.22974&z=9.66468&level=4&id=41313
+
+
+tierID <- 41313
+
+# Fetch data from API
+
+info <- getRegionalSummary(tierID)  #regional summary based on a Spatial Tier ID. 
+sites <- get_sites_info(info) # Extract sites from ReefCloud API
+
+#Create Map and site table
+generate_map (data_file = NULL, api = TRUE, sites = NULL, tier_id = tierID)
+
+
+```
+
+
+### Coral Cover Trend
+[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+
+Model Formula (@eq-accuracy) 
+
+$$
+Acc_\text{(label)}=\frac{\text{TP}_\text{(trainee)}}{\text{Total}_\text{(AIMS)}}\times 100
+$$ {#eq-accuracy}
+
+
+### Reef-level condition
+[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+
+### Environmental Pressures
+[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+
+
+```{r}
+#| label: PrepareWorkspace
+#| echo: false
+#| include: false
+
+
+library(caret)
+library(tidyverse)
+library(ggthemes)
+library(gt)
+
+source("plotting_functions.r")
+
+##Plot theme
+theme_Publication <- function(base_size=14, base_family="sans") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family=base_family)
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(0.8), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               legend.key.size= unit(0.2, "cm"),
+               legend.margin = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold")
+          ))
+      
+}
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+
+}
+
+
+##Load data
+API <- TRUE
+countryISO <- "VNM"
+fdir<-"Data/"
+```
+
+## Results
+```{r}
+#| label: Sampling 
+#| echo: false
+#| warning: false
+#| include: false
+
+## EXTRACT Summary Data 
+
+
+#We calculate how many points are annoated for each survey/person and remove surveys with no annotations at all.
+
+pre.check <- pre |>  
+  group_by(survey_title)  |> 
+  count(point_human_classification == "")  |> 
+  pivot_wider(names_from = 2, values_from = 3)  |> 
+  rename(annotated = 2, not_annotated = 3) |> 
+  filter(annotated != "NA") 
+
+post.check <- post |>  
+  group_by(survey_title)  |> 
+  count(point_human_classification == "")  |> 
+  pivot_wider(names_from = 2, values_from = 3)  |> 
+  rename(annotated = 2, not_annotated = 3) |> 
+  filter(annotated != "NA") 
+
+
+#Then we prepare the right classifications for each image and point. In this case the survey with the confirmed annotations was named "AIMS".
+pre <- pre |> 
+  filter(point_human_classification != "")
+
+pre.right <- pre |> 
+  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
+  select(point_human_classification, 
+         point_human_group_code, 
+         image_num) |> 
+  rename(right_classification = point_human_classification, 
+         right_group_code = point_human_group_code)
+
+
+post <- post |> 
+  filter(point_human_classification != "")
+
+post.right <- post |> 
+  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
+  select(point_human_classification, 
+         point_human_group_code, 
+         image_num) |> 
+  rename(right_classification = point_human_classification, 
+         right_group_code = point_human_group_code)
+
+
+#We then calculate the number of right classifications and group codes.
+
+pre.response <- pre  |> 
+  filter(survey_title != "AIMS") |> 
+  filter(survey_title %in% pre.check$survey_title) |> 
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  full_join(pre.right, by = "image_num") 
+
+pre.results <- pre.response |>  
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         right_classification, 
+         point_human_group_code,
+         right_group_code) |> 
+  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
+         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
+
+pre.right.check <- pre.right |> 
+  select(-image_num) |> 
+  group_by(right_classification) |> 
+  mutate(count_right_classification = n()) |> 
+  ungroup() |> 
+  group_by(right_group_code) |> 
+  mutate(count_right_group_code = n()) |> 
+  ungroup()
+
+post.response <- post  |> 
+  filter(survey_title != "AIMS") |> 
+  filter(survey_title %in% post.check$survey_title) |> 
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         point_human_group_code) |> 
+  left_join(post.right) 
+
+post.results <- post.response |>  
+  select(survey_title, 
+         image_num, 
+         point_human_classification, 
+         right_classification, 
+         point_human_group_code,
+         right_group_code) |> 
+  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
+         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
+
+post.right.check <- post.right |> 
+  select(-image_num) |> 
+  group_by(right_classification) |> 
+  mutate(count_right_classification = n()) |> 
+  ungroup() |> 
+  group_by(right_group_code) |> 
+  mutate(count_right_group_code = n()) |> 
+  ungroup()
+
+```
+
+```{r}
+#| label: calculateClassificationAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+
+#To prepare the data for graphing, we calculate the accuracy of the annotations and group codes.
+
+pre.results.class <- pre.results  |> 
+  select(survey_title,
+         right_classification,
+         check_classification) |> 
+  inner_join(pre.right.check |>  
+               select(right_classification, count_right_classification)) |> 
+  unique() |> 
+  mutate(accuracy_classification = check_classification/count_right_classification*100, 
+         type = "Pre")
+
+post.results.class <- post.results  |> 
+  select(survey_title,
+         right_classification,
+         check_classification) |> 
+  inner_join(post.right.check |>  
+               select(right_classification, count_right_classification)) |> 
+  unique() |> 
+  mutate(accuracy_classification = check_classification/count_right_classification*100,
+        type = "Post")
+
+results.class <- pre.results.class |> 
+  rbind(post.results.class) |> 
+  rename(classification = right_classification, classifications_annotated = check_classification, total_right_classification = count_right_classification) |> 
+  pivot_longer(cols = c("classifications_annotated", "total_right_classification", "accuracy_classification"), 
+               names_to = "accuracy",
+               values_to = "value") |> 
+  left_join(labelset, by = join_by(classification == point_human_classification))
+
+results.class$type <- factor(results.class$type, levels = c("Pre", "Post"))
+
+```
+
+```{r}
+#| label: calculateGroupCodeAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+pre.results.group <- pre.results  |> 
+  select(survey_title,
+         right_group_code,
+         check_group_code) |>
+  group_by(survey_title, right_group_code) |> 
+  mutate(check_group_code = sum(check_group_code)) |> 
+  inner_join(pre.right.check |>  
+               select(right_group_code, count_right_group_code)) |> 
+  unique() |> 
+  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
+         type = "Pre")
+
+post.results.group <- post.results  |> 
+  select(survey_title,
+         right_group_code,
+         check_group_code) |> 
+  group_by(survey_title, right_group_code) |> 
+  mutate(check_group_code = sum(check_group_code)) |> 
+  inner_join(post.right.check |>  
+               select(right_group_code, count_right_group_code)) |> 
+  unique() |> 
+  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
+         type = "Post")
+
+results.group <- pre.results.group |> 
+  rbind(post.results.group)  |> 
+  rename(group_code = right_group_code, group_codes_annotated = check_group_code, total_right_group_code = count_right_group_code) |> 
+  pivot_longer(cols = c("group_codes_annotated", "total_right_group_code", "accuracy_group_code"), 
+               names_to = "accuracy",
+               values_to = "value")
+
+results.group$type <- factor(results.group$type, levels = c("Pre", "Post"))
+```
+
+```{r}
+#| label: calculateOverallAccuracy
+#| echo: false
+#| include: false
+#| warning: false
+pre.results.overall <- pre.results |> 
+  select(survey_title,
+         check_classification,
+         check_group_code) |> 
+  group_by(survey_title) |> 
+  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
+         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
+  inner_join(pre.check |>  
+               filter(survey_title != "AIMS")) |> 
+  select(-check_classification, -check_group_code, -not_annotated) |> 
+  unique() |> 
+  summarise(overall_accuracy_classification = overall_classification/annotated*100,
+         overall_accuracy_group_code = overall_group_code/annotated*100,
+         overall_annotated = annotated/50*100) |> 
+  mutate(type = "Pre")
+
+post.results.overall <- post.results  |> 
+  select(survey_title,
+         check_classification,
+         check_group_code) |> 
+  group_by(survey_title) |> 
+  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
+         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
+  inner_join(post.check |>  
+               filter(survey_title != "AIMS")) |> 
+  select(-check_classification, -check_group_code, -not_annotated) |> 
+  unique() |> 
+  summarise(overall_accuracy_classification = overall_classification/annotated*100,
+         overall_accuracy_group_code = overall_group_code/annotated*100,
+         overall_annotated = annotated/50*100) |> 
+  mutate(type = "Post")
+
+results.overall <- pre.results.overall |> 
+  rbind(post.results.overall) |> 
+  pivot_longer(cols = c("overall_accuracy_classification", "overall_accuracy_group_code", "overall_annotated"), 
+               names_to = "accuracy",
+               values_to = "value")
+
+results.overall$type <- factor(results.overall$type, levels = c("Pre", "Post"))
+```
+
+## Guidelines for Interpretation
