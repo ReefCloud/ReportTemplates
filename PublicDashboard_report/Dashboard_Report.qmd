@@ -1,48 +1,101 @@
 ---
-title: "Overall condition of coral reefs habitats"
-subtitle: "[INSERT REGION NAME and EVALUATION YEARS]"
-date: Sys.date()
-author: 
-  - name: "Manuel Gonzalez-Rivero"
-    affiliation: "Australian Institute of Marine Science"
-    orcid: "0000-0002-1825-0097" # Replace with the actual ORCID ID
-  - name: "[INSERT AUTHOR]"
-    affiliation: "[INSERT AFFILIATION]"
-    orcid: "[INSERT ORCID ID]" # Replace with the actual ORCID ID
+title: Report
+subtitle: Coral reefs habitat status and trends
+date: today
+author: Manuel Gonzalez-Rivero
+
+# authors:
+#   - name: Manuel Gonzalez-Rivero
+#     affiliations:
+#       - ref: aims
+#     email: m.gonzalezrivero@aims.gov.au
+#     corresponding: true
+#     orcid: 0000-0003-0252-584X
+#     equal-contributor: false
+#   - name: Second Author
+#     affiliations:
+#       - ref: uf
+#     email: xx@xxx.com
+#     corresponding: false
+#     orcid: 0000-0003-0252-584X
+#     equal-contributor: false
+
+# affiliations: 
+#   - id: aims
+#     name: Australian Institute of Marine Science, Townsville. Queensland 4810. Australia
+#   - id: uf
+#     name: Institute, City. State Postcode. Country
+
+license: "CC BY"
 crossref:
   lof-title: "List of Figures"
-format: 
+
+filters:
+  - authors-block
+
+format:
+  docx: default
+  pdf:
+    keep-tex: true
+    include-in-header:
+        - text: \usepackage{mathtools}
+  elsevier-pdf:
+    keep-tex: true
+    journal:
+      name: ReefCloud Report
+      cite-style: authoryear
   PrettyPDF-pdf:
+    keep-tex: true
+    include-in-header:
+        - text: \usepackage{mathtools}
     fig-pos: "H"
-output-file: "Reef_Habitat_Condition_Report_[INSERT REGION NAME]"
+output-file: "Reef_Habitat_Condition_Report"
 output-ext: "pdf"
 mainfont: Arial
 engine: knitr
 execute:
   eval: true
+  echo: false
+  warning: false
+  error: false
+# bibliography: references.bib
+# link-citations: true
 ---
 
-## Introduction
+# Disclaimer
+This report has been automatically generated with results from monitoring that are publicly available on ReefCloud.ai. Neither the authors or the Australian Institute of Marine Science provide any guarantees or take responsibility for the content or interpretation of these results. Users are advised to verify the data and consult with experts for accurate interpretation and application of the information presented in this report.
 
-[@Sam Please insert a generic introduction statement]
+\newpage
 
-[COMPLETE INTRODUCTION]
 
-## Methodology
+# Introduction
 
-[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+This report provides a summary of the results from monitoring coral reef habitats in this region using ReefCloud.ai. ReefCloud.ai is an advanced platform designed to facilitate the collection, analysis, and visualization of coral reef monitoring data. By leveraging cutting-edge technology and data integration, ReefCloud.ai enables researchers and stakeholders to assess the status and trends of coral reef ecosystems effectively.
+
+Coral reefs are among the most diverse and valuable ecosystems on Earth, providing critical habitat for countless marine species, supporting fisheries, protecting coastlines from erosion, and contributing to local economies through tourism and recreation (Hoegh-Guldberg et al., 2007). Despite their importance, coral reefs are facing unprecedented threats from climate change, overfishing, pollution, and other human activities. Recent studies have documented significant declines in coral cover and reef health globally, with some regions experiencing losses of up to 50% in the past few decades (Hughes et al., 2017; Bruno & Selig, 2007).
+
+Monitoring coral reefs is essential for understanding the extent and drivers of these declines and for informing effective conservation and management actions. Regular monitoring allows scientists to detect changes in reef condition, identify areas of resilience, and evaluate the effectiveness of conservation interventions (McClanahan et al., 2012). However, traditional monitoring methods can be labor-intensive, time-consuming, and costly, limiting their scalability and frequency.
+
+ReefCloud.ai addresses these challenges by providing a user-friendly platform that streamlines the process of data collection, analysis, and reporting. The platform integrates data from various sources, including underwater photographs, satellite imagery, and environmental sensors, to provide a comprehensive view of reef health. Advanced analytical tools and machine learning algorithms enable the rapid processing and interpretation of large datasets, making it easier for researchers to track changes over time and identify emerging threats.
+
+In addition to its technical capabilities, ReefCloud.ai fosters collaboration and data sharing among researchers, conservation practitioners, and policymakers. By providing a centralized repository for reef monitoring data, the platform promotes transparency and facilitates the dissemination of findings to a broader audience. This collaborative approach enhances the collective understanding of coral reef dynamics and supports the development of coordinated conservation strategies.
+
+In summary, this report leverages the capabilities of ReefCloud.ai to provide an in-depth assessment of coral reef habitats in the region. The findings presented here will contribute to ongoing efforts to protect and restore these vital ecosystems for future generations.
+
+References: - Hoegh-Guldberg, O., et al. (2007). Coral reefs under rapid climate change and ocean acidification. Science, 318(5857), 1737-1742. - Hughes, T. P., et al. (2017). Global warming and recurrent mass bleaching of corals. Nature, 543(7645), 373-377. - Bruno, J. F., & Selig, E. R. (2007). Regional decline of coral cover in the Indo-Pacific: Timing, extent, and subregional comparisons. PLoS ONE, 2(8), e711. - McClanahan, T. R., et al. (2012). Critical thresholds and tangible targets for ecosystem-based management of coral reef fisheries. Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
+
+# Methodology
 
 ## Study Area
+
 ```{r}
 #| label: Study_Area
-#| echo: false
 #| include: false
-source("install_packages.R")
+#source("install_packages.R")
 library(tidyverse)
 library(sf)
 source("ReefCloud_API.R")
 source("plotting_functions.R")
-
 
 ## Get tier ID
 #In the ReefCloud Dashboard a tier is a spatial polygon that defines the boundaries of a region. 
@@ -57,337 +110,211 @@ source("plotting_functions.R")
 # 3. Extract the last digits from the url. For example, the case below extract the tier 4 (level = 4) from Vietnam, which is 41313
 # https://reefcloud.ai/dashboard/?x=109.08514&y=12.22974&z=9.66468&level=4&id=41313
 
-
+##Load data
+API <- TRUE
+countryISO <- "VNM"
+fdir<-"Data/"
 tierID <- 41313
 
 # Fetch data from API
 
 info <- getRegionalSummary(tierID)  #regional summary based on a Spatial Tier ID. 
 sites <- get_sites_info(info) # Extract sites from ReefCloud API
+year=2024
 
-#Create Map and site table
-generate_map (data_file = NULL, api = TRUE, sites = NULL, tier_id = tierID)
+#Create Map
+site_map <- generate_map(data_file = NULL, api = TRUE, sites = NULL, tier_id = tierID)
+```
 
+The surveyed area, identified within the administrative boundaries of `r info$region_name` in `r unique(sites$site_country)`, encompasses the following details:
 
+-   **Number of Sites**: `r info$site_count`
+-   **Number of Photo Quadrats**: `r info$photo_quadrats`
+-   **Data Contributors**: `r info$data_contributors`
+-   **Source**: `r info$source`
+
+The survey sites are distributed across the region (@fig-map), detailed information provided in @tbl-surveyed_sites.
+
+```{r}
+#| label: fig-map
+#| fig-cap: "Map of survey sites in the region."
+#| fig-align: "left"
+#| fig-width: 10
+knitr::include_graphics("figures/Site_Map.png")
 ```
 
 
-### Coral Cover Trend
-[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
 
-Model Formula (@eq-accuracy) 
+## Benthic Analyses
+
+### Automated Image Analyses
+The data in this report summarises integrated and standardized percent cover information from annotated photo-quadrats from multiple monitoring projects in ReefCloud for the selected region, made publicly available by project administrators on ReefCloud.ai.
+
+ReefCloud analyzes monitoring images and automatically extracts hard coral cover estimates from 50 points per image using Artificial Intelligence (sensu Gonzalez-Rivero et al., 2014). Specifically, ReefCloud employs Deep Learning with a Convolutional Neural Network model pre-trained with monitoring data from the Australian Institute of Marine Science. This model reduces the complexity of data describing benthic composition from images. Through Transfer Learning, the pre-trained model is adapted to specific locations and training data for projects in the selected region, classifying 50 points on each survey image to estimate the percent cover of hard coral and macroalgae.
+
+
+### Major Benthic cover
+
+Hard coral cover is a key indicator of reef health, representing the proportion of the reef surface covered by live hard corals (Hexacorallia). This measure is widely accepted and used globally to assess the condition of coral reef habitats (Hughes et al., 2010). 
+For this report, all publicly available data from ReefCloud for the region is compiled into a single dataset, including information about the sampling source, depth, location, and number of photos analyzed to produce hard coral and macroalgae cover. These datasets are analyzed using hierarchical Bayesian statistical models, which predict annual cover (Hard Coral and Macroalgae) and the uncertainty of these estimates. The posterior predictions from the model across the region and for each site are aggregated to median and lower/upper credible intervals within 95% of the distribution quantiles (Gelman et al., 2013).
+
+ReefCloud uses a statistical model to generate site-specific cover estimates. The model considers transects per site and categorical depth strata (0-5m and \> 5m depth) as replicates to produce cover estimates per site and year using a Hierarchical Bayesian model (@eq-model).
 
 $$
-Acc_\text{(label)}=\frac{\text{TP}_\text{(trainee)}}{\text{Total}_\text{(AIMS)}}\times 100
-$$ {#eq-accuracy}
+\begin{multlined}
+y_{ij} \sim{} \beta_{}Bin(\pi_{ij},n) \\
+log\left(\frac{\pi_{ij}}{1-\pi_{ij}}\right) \sim{} \beta_0  + \beta_1year_2 + \beta_2depth_{ij} + \gamma_{site}
+\\
+\\
+\\Where:
+\\
+\beta_0 \sim{} N (0,1) 
+\\
+\beta_1 \sim{} N (0,1) 
+\\
+\beta_2 \sim{} N (0,1) 
+\\
+\gamma_{site} \sim{} t_{}(3,0,1) 
+\\
+\phi_{} \sim{} \gamma_{}(1,0.1)
+\\
+\end{multlined}
+$$ {#eq-model}
+
+## Environmental Pressures
+
+### Thermal Stress
+
+First observed in the early 1980s, mass coral bleaching has become one of the most visible and damaging impacts of climate change on marine ecosystems (Glynn, 1984; Hoegh-Guldberg, 1999). When water temperatures exceed the average maximum summer temperature for extended periods, corals can become thermally stressed, leading to coral bleaching and potentially death (Baker et al., 2008). Bleaching occurs when corals lose their symbiotic algae (zooxanthellae), which provide them with energy and their distinctive colors. Severe bleaching can lead to increased disease and mortality in corals (Hoegh-Guldberg, 1999). Over the past decade, coral bleaching events have become more frequent, extensive, and intense (Hughes et al., 2018).
+
+To monitor thermal stress, we use Degree Heating Weeks (DHW), calculated from satellite measurements of Sea Surface Temperature (SST) provided by NOAA Coral Reef Watch (Liu et al., 2014). DHW indicates the accumulated heat stress over the past 12 weeks (\~3 months) and is a reliable predictor of coral bleaching. The units for DHW are "degree C-weeks," combining the intensity and duration of heat stress. Research shows that when DHW reaches 4 degrees C-weeks or higher, widespread bleaching is often observed. At DHW levels above 8, significant coral mortality is typically evidenced (Liu et al., 2014).
+
+DHW is calculated by accumulating temperature readings that are more than one degree Celsius above the historical maximum monthly mean temperature for a given location. For example, if the temperature is 2°C above the summer maximum monthly mean for 4 weeks, the DHW value is 8 DHW (2°C x 4 weeks). The thermal stress is accumulated over a 12-week sliding window (Eakin et al., 2010).
+
+The data in this report was produced by ReefCloud.ai using NOAA's Coral Reef Watch products to provide insights into thermal stress exposure for the reported region. NOAA's Coral Reef Watch products are widely used and the longest operating DHW product. ReefCloud uses NOAA's Annual Maximum Monthly Degree Heating Week, measured by daily global 5km satellite estimations of SST. Values are derived using the Version 3.1 daily global 5Km CoralTemp satellite SST data product.
+
+This report uses the proportion of reef exposed to moderate and severe levels of thermal stress from DHW. This proportion is calculated in ReefCloud using a combination of NOAA Coral Reef Watch DHW rasters with spatial information on the distribution of coral reefs in this region from the Allen Coral Atlas and the Global Distribution of Coral Reefs (WCWC-008) datasets. These datasets provide spatially explicit information on the location and area covered by coral reefs. When overlaid with the DHW, the ReefCloud data platform calculates the extent of reef area exposed to moderate (4-8 DHW), severe (\>8 DHW), or no major thermal stress (\<4 DHW).
+
+The thermal stress data layer is updated annually in ReefCloud as the data becomes available on the NOAA Coral Reef Watch data server.
+
+References: - Glynn, P. W. (1984). Widespread coral mortality and the 1982–83 El Niño warming event. Environmental Conservation, 11(2), 133-146. - Hoegh-Guldberg, O. (1999). Climate change, coral bleaching and the future of the world's coral reefs. Marine and Freshwater Research, 50(8), 839-866. - Baker, A. C., Glynn, P. W., & Riegl, B. (2008). Climate change and coral reef bleaching: An ecological assessment of long-term impacts, recovery trends and future outlook. Estuarine, Coastal and Shelf Science, 80(4), 435-471. - Hughes, T. P., et al. (2018). Global warming transforms coral reef assemblages. Nature, 556(7702), 492-496. - Liu, G., et al. (2014). Reef-scale thermal stress monitoring of coral ecosystems: New 5-km global products from NOAA Coral Reef Watch. Remote Sensing, 6(11), 11579-11606. - Eakin, C. M., et al. (2010). Monitoring coral reefs from space. Oceanography, 23(4), 118-133.
+
+### Tropical Cyclones
+
+A tropical cyclone is a rapidly rotating storm system with low atmospheric pressure at its calm center (i.e., eye), inward spiraling rainbands, and strong winds that form in areas of sufficiently warm sea surface temperature in the world's tropical regions. In the southern hemisphere, these tropical storms are called cyclones and rotate in a clockwise direction. In the northern hemisphere, cyclones are called hurricanes (western hemisphere) or typhoons (eastern hemisphere) and rotate in an anti-clockwise direction. If sufficiently long-lasting, the extreme winds generated by these storms can build powerful waves which can severely damage coral reefs and shorelines.
+
+By modeling where extreme waves could form during a given cyclone, it is possible to predict a cyclone "damage zone" beyond which major damage to reefs will not likely occur. This zone is defined as the area within which the average height of the top one-third of the waves likely meets or exceeds four (4) meters (Hs - significant wave height). Here, we call this the 4MW (Hs >= 4m) zone. Field data from 8 past cyclones in the Great Barrier Reef and Western Australia has shown such zones perform well at capturing severe damage - noting that because reef vulnerability is highly variable at <1 km scales, some parts of the reefs within the damage zone will not be damaged. Mapping the 4MW cyclone damage zone helps reef managers to: 1) spatially target management responses after major tropical cyclones to promote recovery at severely damaged sites, and 2) identify spatial patterns in historic cyclone exposure to explain habitat condition trajectories.
+
+The data presented here for tropical cyclones is sourced from ReefCloud.ai. ReefCloud aims to source the most accurate data available for the regions impacted by cyclones every year. This means that the platform collates data from various databases to provide the best insights possible on the estimated damage zone from tropical cyclones in a given region. For cyclones within the Australian Exclusive Economic Zone, ReefCloud sources data provided by the [Australian Bureau of Meteorology's cyclone database](http://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/). For other regions outside Australia, ReefCloud uses data sourced from the [International Best Track Archive for Climate Stewardship](https://www.ncdc.noaa.gov/ibtracs/).
+
+Once formed, tropical cyclones are remarkably predictable and well-organized storm systems, making it possible to reconstruct the spatial distribution of winds and waves around the eye to build predicted wind and wave fields from a short list of input data that is freely available in the meteorological databases mentioned above (location of the eye, central and ambient air pressure, size of the eye, size of the cyclone, and cyclone forward speed and direction). The 4MW damage zone model (Puotinen et al., 2016) was used to generate the damage zone. This model uses this base data to reconstruct the spatial distribution of wind speeds around the cyclone eye every hour along its track. It then searches in each location across the study area for locations where wind speeds were sufficiently high and long-lasting to build significant wave heights equal to or above four (4) meters. The model summarizes the data by recording the number of hours for which such conditions persisted. The resultant 4MW cyclone damage zone predicts the locations where sufficient wave energy could cause major damage to coral reefs.
 
 
-### Reef-level condition
-[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+## Regional trends on hard coral cover
 
-### Environmental Pressures
-[@Sam Insert a methodological statement from the ReefCloud Dashboard tooltips and any additional information about the source of the data ]
+\pagebreak
+# Results
 
+## Status of coral reef habitats in `r info$region_name`
 
-```{r}
-#| label: PrepareWorkspace
-#| echo: false
-#| include: false
+```{r, echo=FALSE, out.width="100%"}
+#| label: fig-waffle
+#| fig-cap: "Proportion of monitored reef sites within the region withing condition classifications based on coral cover range: A = >50% cover, B = 30-50% cover, C = 10-30% cover, D= <10 % cover."
+#| fig-align: "center"
+cover_type="HARD CORAL"
+xdf<- get_site_cover_cat(tier_id=tierID, cover_type=cover_type) %>%
+        mutate(Proportion = Site_No / sum(Site_No),
+           Proportion = round(Proportion * 100, 0))
+H.Class<-xdf$Class[which(xdf$Proportion==max(xdf$Proportion))]
+H.Proportion<-xdf$Proportion[which(xdf$Proportion==max(xdf$Proportion))]
 
-
-library(caret)
-library(tidyverse)
-library(ggthemes)
-library(gt)
-
-source("plotting_functions.r")
-
-##Plot theme
-theme_Publication <- function(base_size=14, base_family="sans") {
-      library(grid)
-      library(ggthemes)
-      (theme_foundation(base_size=base_size, base_family=base_family)
-       + theme(plot.title = element_text(face = "bold",
-                                         size = rel(0.8), hjust = 0.5),
-               text = element_text(),
-               panel.background = element_rect(colour = NA),
-               plot.background = element_rect(colour = NA),
-               panel.border = element_rect(colour = NA),
-               axis.title = element_text(face = "bold",size = rel(1)),
-               axis.title.y = element_text(angle=90,vjust =2),
-               axis.title.x = element_text(vjust = -0.2),
-               axis.text = element_text(), 
-               axis.line = element_line(colour="black"),
-               axis.ticks = element_line(),
-               panel.grid.major = element_line(colour="#f0f0f0"),
-               panel.grid.minor = element_blank(),
-               legend.key = element_rect(colour = NA),
-               legend.position = "bottom",
-               legend.direction = "horizontal",
-               legend.key.size= unit(0.2, "cm"),
-               legend.margin = unit(0, "cm"),
-               legend.title = element_text(face="italic"),
-               plot.margin=unit(c(10,5,5,5),"mm"),
-               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
-               strip.text = element_text(face="bold")
-          ))
-      
-}
-
-scale_fill_Publication <- function(...){
-      library(scales)
-      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
-
-}
-
-scale_colour_Publication <- function(...){
-      library(scales)
-      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
-
-}
-
-
-##Load data
-API <- TRUE
-countryISO <- "VNM"
-fdir<-"Data/"
+p<-generate_waffle_plots(tierID, info, cover_type)
+knitr::include_graphics(paste0('figures/', "SiteCondition_",cover_type, '.png'))
 ```
 
-## Results
-```{r}
-#| label: Sampling 
-#| echo: false
+In `r year`, `r H.Proportion`% of a total of `r info$site_count` monitored reef sites exhibited `r str_to_title(cover_type)` within `r xdf$Range[xdf$Class==H.Class]` (@fig-waffle)
+
+## Recent Environmental Disturbances
+
+```{r, echo=FALSE, out.width="100%"}
+#| label: fig-env_dist
+#| fig-cap: "Proportion of reef area within the region affected by environmental pressures during the reporting year"
+#| fig-align: "center"
+
+dist<-generate_donut_chart(tierID, year, info)
+knitr::include_graphics("figures/Disturbance_impact.png")
+```
+
+## Temporal trends
+
+
+\pagebreak
+# Interpretation Notes
+
+\pagebreak
+
+# References
+
+-   Hoegh-Guldberg, O., et al. (2007). Coral reefs under rapid climate change and ocean acidification. Science, 318(5857), 1737-1742.
+-   Hughes, T. P., et al. (2017). Global warming and recurrent mass bleaching of corals. Nature, 543(7645), 373-377.
+-   Bruno, J. F., & Selig, E. R. (2007). Regional decline of coral cover in the Indo-Pacific: Timing, extent, and subregional comparisons. PLoS ONE, 2(8), e711.
+-   McClanahan, T. R., et al. (2012). Critical thresholds and tangible targets for ecosystem-based management of coral reef fisheries. Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
+-   Glynn, P. W. (1984). Widespread coral mortality and the 1982–83 El Niño warming event. Environmental Conservation, 11(2), 133-146.
+-   Hoegh-Guldberg, O. (1999). Climate change, coral bleaching and the future of the world's coral reefs. Marine and Freshwater Research, 50(8), 839-866.
+-   Baker, A. C., Glynn, P. W., & Riegl, B. (2008). Climate change and coral reef bleaching: An ecological assessment of long-term impacts, recovery trends and future outlook. Estuarine, Coastal and Shelf Science, 80(4), 435-471.
+-   Hughes, T. P., et al. (2018). Global warming transforms coral reef assemblages. Nature, 556(7702), 492-496.
+-   Liu, G., et al. (2014). Reef-scale thermal stress monitoring of coral ecosystems: New 5-km global products from NOAA Coral Reef Watch. Remote Sensing, 6(11), 11579-11606.
+-   Eakin, C. M., et al. (2010). Monitoring coral reefs from space. Oceanography, 23(4), 118-133.
+
+\pagebreak
+
+# Suppementary Materials
+
+## Site description
+```{r, echo=FALSE, out.width="100%"}
+#| label: tbl-surveyed_sites
+#| tbl-cap: "Monitoring site information"
 #| warning: false
-#| include: false
-
-## EXTRACT Summary Data 
+#| echo: false 
 
 
-#We calculate how many points are annoated for each survey/person and remove surveys with no annotations at all.
-
-pre.check <- pre |>  
-  group_by(survey_title)  |> 
-  count(point_human_classification == "")  |> 
-  pivot_wider(names_from = 2, values_from = 3)  |> 
-  rename(annotated = 2, not_annotated = 3) |> 
-  filter(annotated != "NA") 
-
-post.check <- post |>  
-  group_by(survey_title)  |> 
-  count(point_human_classification == "")  |> 
-  pivot_wider(names_from = 2, values_from = 3)  |> 
-  rename(annotated = 2, not_annotated = 3) |> 
-  filter(annotated != "NA") 
-
-
-#Then we prepare the right classifications for each image and point. In this case the survey with the confirmed annotations was named "AIMS".
-pre <- pre |> 
-  filter(point_human_classification != "")
-
-pre.right <- pre |> 
-  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
-  select(point_human_classification, 
-         point_human_group_code, 
-         image_num) |> 
-  rename(right_classification = point_human_classification, 
-         right_group_code = point_human_group_code)
-
-
-post <- post |> 
-  filter(point_human_classification != "")
-
-post.right <- post |> 
-  filter(survey_title == "AIMS")  |> #change AIMS to the name of the correct survey 
-  select(point_human_classification, 
-         point_human_group_code, 
-         image_num) |> 
-  rename(right_classification = point_human_classification, 
-         right_group_code = point_human_group_code)
-
-
-#We then calculate the number of right classifications and group codes.
-
-pre.response <- pre  |> 
-  filter(survey_title != "AIMS") |> 
-  filter(survey_title %in% pre.check$survey_title) |> 
-  select(survey_title, 
-         image_num, 
-         point_human_classification, 
-         point_human_group_code) |> 
-  full_join(pre.right, by = "image_num") 
-
-pre.results <- pre.response |>  
-  select(survey_title, 
-         image_num, 
-         point_human_classification, 
-         right_classification, 
-         point_human_group_code,
-         right_group_code) |> 
-  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
-         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
-
-pre.right.check <- pre.right |> 
-  select(-image_num) |> 
-  group_by(right_classification) |> 
-  mutate(count_right_classification = n()) |> 
-  ungroup() |> 
-  group_by(right_group_code) |> 
-  mutate(count_right_group_code = n()) |> 
-  ungroup()
-
-post.response <- post  |> 
-  filter(survey_title != "AIMS") |> 
-  filter(survey_title %in% post.check$survey_title) |> 
-  select(survey_title, 
-         image_num, 
-         point_human_classification, 
-         point_human_group_code) |> 
-  left_join(post.right) 
-
-post.results <- post.response |>  
-  select(survey_title, 
-         image_num, 
-         point_human_classification, 
-         right_classification, 
-         point_human_group_code,
-         right_group_code) |> 
-  mutate(check_classification = if_else(point_human_classification == right_classification, 1, 0), 
-         check_group_code = if_else(point_human_group_code == right_group_code, 1, 0))
-
-post.right.check <- post.right |> 
-  select(-image_num) |> 
-  group_by(right_classification) |> 
-  mutate(count_right_classification = n()) |> 
-  ungroup() |> 
-  group_by(right_group_code) |> 
-  mutate(count_right_group_code = n()) |> 
-  ungroup()
-
+library(knitr)
+sites.df <- sites %>% bind_cols(st_coordinates(sites)) %>% st_drop_geometry() %>% 
+  select(c(site_name, X, Y, image_count)) %>% 
+  rename(Name = site_name, Images = image_count, Latitude =Y, Longitude= X,) %>%
+  mutate(Name=str_replace_all(Name, pattern="[.]", " "))
+kable(sites.df, align="l")
 ```
 
-```{r}
-#| label: calculateClassificationAccuracy
-#| echo: false
-#| include: false
-#| warning: false
+\pagebreak
+## Tips for Writing a Technical Report on Coral Reef Monitoring Results
 
-#To prepare the data for graphing, we calculate the accuracy of the annotations and group codes.
+When writing a technical report on coral reef monitoring results for a non-technical but knowledgeable audience, it is essential to communicate complex scientific information clearly and effectively. Here are some tips to help you achieve this:
 
-pre.results.class <- pre.results  |> 
-  select(survey_title,
-         right_classification,
-         check_classification) |> 
-  inner_join(pre.right.check |>  
-               select(right_classification, count_right_classification)) |> 
-  unique() |> 
-  mutate(accuracy_classification = check_classification/count_right_classification*100, 
-         type = "Pre")
+1.  **Know Your Audience**: Understand the background and interests of your audience. Tailor your language and explanations to their level of knowledge, avoiding jargon and overly technical terms.
 
-post.results.class <- post.results  |> 
-  select(survey_title,
-         right_classification,
-         check_classification) |> 
-  inner_join(post.right.check |>  
-               select(right_classification, count_right_classification)) |> 
-  unique() |> 
-  mutate(accuracy_classification = check_classification/count_right_classification*100,
-        type = "Post")
+2.  **Clear Structure**: Organize your report with a clear structure, including an introduction, methodology, results, discussion, and conclusion. Use headings and subheadings to guide the reader through the content.
 
-results.class <- pre.results.class |> 
-  rbind(post.results.class) |> 
-  rename(classification = right_classification, classifications_annotated = check_classification, total_right_classification = count_right_classification) |> 
-  pivot_longer(cols = c("classifications_annotated", "total_right_classification", "accuracy_classification"), 
-               names_to = "accuracy",
-               values_to = "value") |> 
-  left_join(labelset, by = join_by(classification == point_human_classification))
+3.  **Visual Aids**: Use charts, graphs, maps, and images to illustrate key points and make data more accessible. Visual aids can help convey complex information quickly and effectively.
 
-results.class$type <- factor(results.class$type, levels = c("Pre", "Post"))
+4.  **Simplify Data Presentation**: Present data in a simplified manner. Use summary statistics, percentages, and averages to highlight key findings. Avoid overwhelming the reader with too much raw data.
 
-```
+5.  **Contextualize Findings**: Provide context for your findings by comparing them to previous studies or historical data. Explain the significance of the results and their implications for coral reef conservation and management.
 
-```{r}
-#| label: calculateGroupCodeAccuracy
-#| echo: false
-#| include: false
-#| warning: false
-pre.results.group <- pre.results  |> 
-  select(survey_title,
-         right_group_code,
-         check_group_code) |>
-  group_by(survey_title, right_group_code) |> 
-  mutate(check_group_code = sum(check_group_code)) |> 
-  inner_join(pre.right.check |>  
-               select(right_group_code, count_right_group_code)) |> 
-  unique() |> 
-  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
-         type = "Pre")
+6.  **Use Analogies and Examples**: Use analogies and real-world examples to explain complex concepts. This can help make the information more relatable and easier to understand.
 
-post.results.group <- post.results  |> 
-  select(survey_title,
-         right_group_code,
-         check_group_code) |> 
-  group_by(survey_title, right_group_code) |> 
-  mutate(check_group_code = sum(check_group_code)) |> 
-  inner_join(post.right.check |>  
-               select(right_group_code, count_right_group_code)) |> 
-  unique() |> 
-  mutate(accuracy_group_code = check_group_code/count_right_group_code*100,
-         type = "Post")
+7.  **Highlight Key Messages**: Identify and emphasize the key messages you want your audience to take away from the report. Use bullet points, bold text, or call-out boxes to draw attention to these points.
 
-results.group <- pre.results.group |> 
-  rbind(post.results.group)  |> 
-  rename(group_code = right_group_code, group_codes_annotated = check_group_code, total_right_group_code = count_right_group_code) |> 
-  pivot_longer(cols = c("group_codes_annotated", "total_right_group_code", "accuracy_group_code"), 
-               names_to = "accuracy",
-               values_to = "value")
+8.  **Provide Recommendations**: Offer clear and actionable recommendations based on your findings. Explain how these recommendations can be implemented and their potential impact on coral reef conservation.
 
-results.group$type <- factor(results.group$type, levels = c("Pre", "Post"))
-```
+9.  **Cite Sources**: Include scientific references and citations to support your findings and provide credibility to your report. Use a consistent citation style throughout the document.
 
-```{r}
-#| label: calculateOverallAccuracy
-#| echo: false
-#| include: false
-#| warning: false
-pre.results.overall <- pre.results |> 
-  select(survey_title,
-         check_classification,
-         check_group_code) |> 
-  group_by(survey_title) |> 
-  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
-         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
-  inner_join(pre.check |>  
-               filter(survey_title != "AIMS")) |> 
-  select(-check_classification, -check_group_code, -not_annotated) |> 
-  unique() |> 
-  summarise(overall_accuracy_classification = overall_classification/annotated*100,
-         overall_accuracy_group_code = overall_group_code/annotated*100,
-         overall_annotated = annotated/50*100) |> 
-  mutate(type = "Pre")
+10. **Review and Edit**: Review your report for clarity, accuracy, and coherence. Seek feedback from colleagues or experts to ensure that your report is well-written and effectively communicates your findings.
 
-post.results.overall <- post.results  |> 
-  select(survey_title,
-         check_classification,
-         check_group_code) |> 
-  group_by(survey_title) |> 
-  mutate(overall_classification = sum(check_classification, na.rm = TRUE), 
-         overall_group_code = sum(check_group_code, na.rm = TRUE)) |> 
-  inner_join(post.check |>  
-               filter(survey_title != "AIMS")) |> 
-  select(-check_classification, -check_group_code, -not_annotated) |> 
-  unique() |> 
-  summarise(overall_accuracy_classification = overall_classification/annotated*100,
-         overall_accuracy_group_code = overall_group_code/annotated*100,
-         overall_annotated = annotated/50*100) |> 
-  mutate(type = "Post")
+### Useful Writing Resources
 
-results.overall <- pre.results.overall |> 
-  rbind(post.results.overall) |> 
-  pivot_longer(cols = c("overall_accuracy_classification", "overall_accuracy_group_code", "overall_annotated"), 
-               names_to = "accuracy",
-               values_to = "value")
+-   [Emphasis - Technical Writing](https://www.writing-skills.com/knowledge-hub/technical-writing/communicate-to-non-technical-audience)
+-   [Purdue Online Writing Lab (OWL)](https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/index.html)
+-   [Technical Writing for Environmental Professionals](https://www.epa.gov/sites/default/files/2015-06/documents/technical-writing.pdf)
+-   [Effective Communication for Scientists](https://www.nature.com/scitable/ebooks/effective-communication-13953993/)
 
-results.overall$type <- factor(results.overall$type, levels = c("Pre", "Post"))
-```
-
-## Guidelines for Interpretation

@@ -4,6 +4,7 @@ library(jsonlite)
 library(gt)
 
 # Miscellaneous Functions to use ReefCloud API and fetch data from the public dashboard
+#API DOCUMENTATION: https://api.reefcloud.ai/reefcloud/dashboard-api/docs#/
 
 ##Get regional summary ######
 #' Get Regional Summary
@@ -32,6 +33,16 @@ info <- list(region_name=data$data$name, site_count=data$data$site_count, photo_
 return(info)
 }
 
+
+## Get Tiers 
+getTiers<-function(tier_level=4, bbox){
+
+url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers?tier_level=%s&xmin=%s&ymin=%s&xmax=%s&ymax=%s", 
+tier_level,bbox$xmin, bbox$ymin,bbox$xmax, bbox$ymax)
+boundary<-st_read(url)
+return(boundary)
+}
+
 ## Get Sites Information #######
 #'
 #' This function retrieves information about monitoring sites within a region (tier) from the ReefCloud API.
@@ -57,3 +68,39 @@ get_sites_info <- function(info) {
   # Return a spatial dataframe containing the longitude and latitude of the sites
   sites
 }
+
+
+##Get reef condition
+get_site_cover_cat <- function(tier_id, cover_type) {
+  cover_type<-str_replace_all(cover_type, " ", "%20")
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
+  tier_id, cover_type)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text"))
+
+  last_year_pos<-which(data$year==max(data$year))
+  df<-data.frame(Class=c("D","D", "B", "C", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+  mutate(Year=data$year[[last_year_pos]])%>%
+  group_by(Year, Class)%>%
+  summarise(Site_No=sum(site_num))%>%
+  mutate(Range= case_when(Class =="D" ~ "0 - 10 %",
+  Class =="C" ~ "10 - 30 %",
+  Class =="B" ~ "30 - 50 %",
+  .default= ">50%"
+   ))
+
+  return(df)
+}
+
+### Environmental pressures
+get_disturbance_ext <- function(tier_id, e_type) {
+  #e_type {thermal_stress, storm_exposure_year}
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/environmental/%s?env_type=%s", 
+  tier_id, e_type)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text", encoding="UTF-8"))
+  data<-data$data %>%
+    mutate(Year=year(start_date))
+  return(data)
+}
+

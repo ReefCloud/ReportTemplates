@@ -1,0 +1,15 @@
+title: Reefcloud
+author: mgonzalezrivero
+version: 1.0.0
+quarto-required: ">=1.6.0"
+contributes:
+  formats:
+    common:
+      toc: true
+      filters:
+        - reefcloud.lua
+    pdf:
+      include-in-header: header.tex
+    html:
+      css: styles.css
+

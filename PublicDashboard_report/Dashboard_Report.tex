@@ -1,0 +1,791 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+    \setmainfont[]{Arial}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+% load packages
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{sectsty}
+\usepackage{fontspec}
+\usepackage{titlesec}
+
+
+%% Set page size with a wider right margin
+\geometry{a4paper, total={170mm,257mm}, left=20mm, top=20mm, bottom=20mm, right=50mm}
+
+%% Let's define some colours
+\definecolor{light}{HTML}{E6E6FA}
+\definecolor{highlight}{HTML}{800080}
+\definecolor{dark}{HTML}{8200d7}
+
+%% Let's add the border on the right hand side 
+\AddToShipoutPicture{% 
+    \AtPageLowerLeft{% 
+        \put(\LenToUnit{\dimexpr\paperwidth-3cm},0){% 
+            \color{dark}\rule{3cm}{\LenToUnit\paperheight}%
+          }%
+     }%
+     % logo
+    \AtPageLowerLeft{% start the bar at the bottom right of the page
+        \put(\LenToUnit{\dimexpr\paperwidth-2.75cm},27.2cm){% move it to the top right
+            \color{light}\includegraphics[width=2.6cm]{_extensions/PrettyPDF/ReefCloud_logo_stacked_REV.png}
+          }%
+     }%
+}
+
+%% Style the page number
+\fancypagestyle{mystyle}{
+  \fancyhf{}
+  \renewcommand\headrulewidth{0pt}
+  \fancyfoot[R]{\thepage}
+  \fancyfootoffset{3.5cm}
+}
+\setlength{\footskip}{20pt}
+
+%% style the chapter/section fonts
+\chapterfont{\color{dark}\fontsize{20}{16.8}\selectfont}
+\sectionfont{\color{dark}\fontsize{20}{16.8}\selectfont}
+\subsectionfont{\color{dark}\fontsize{14}{16.8}\selectfont}
+\titleformat{\subsection}
+  {\sffamily\Large\bfseries}{\thesection}{1em}{}[{\titlerule[0.8pt]}]
+  
+% left align title
+\makeatletter
+\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\begin{flushleft}
+  {\sffamily\huge\textbf{\MakeUppercase{\@title}}} \vspace{0.3cm} \newline
+  {\Large {\@subtitle}} \newline
+  {\@author} \newline
+  \@date
+\end{flushleft}\egroup
+}
+\makeatother
+
+
+
+
+
+%% Use some custom fonts
+% \setsansfont{Ubuntu}[
+    % Path=_extensions/nrennie/PrettyPDF/Ubuntu/,
+    % Scale=0.9,
+    % Extension = .ttf,
+    % UprightFont=*-Regular,
+    % BoldFont=*-Bold,
+    % ItalicFont=*-Italic
+    % ]
+
+% \setmainfont{Ubuntu}[
+    % Path=_extensions/nrennie/PrettyPDF/Ubuntu/,
+    % Scale=0.9,
+    % Extension = .ttf,
+    % UprightFont=*-Regular,
+    % BoldFont=*-Bold,
+    % ItalicFont=*-Italic
+    % ]
+\usepackage{mathtools}
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}{}
+\makeatother
+\makeatletter
+\@ifundefined{codebgcolor}{\definecolor{codebgcolor}{named}{light}}{}
+\makeatother
+\makeatletter
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, sharp corners, colback={codebgcolor}, boxrule=0pt, enhanced, frame hidden]}{\end{tcolorbox}}\fi
+\makeatother
+
+\usepackage{bookmark}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Report},
+  colorlinks=true,
+  linkcolor={highlight},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={highlight},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Report}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Coral reefs habitat status and trends}
+\author{Manuel Gonzalez-Rivero\textsuperscript{}}
+\date{2025-03-02}
+
+\begin{document}
+\maketitle
+
+\pagestyle{mystyle}
+
+
+\section{Disclaimer}\label{disclaimer}
+
+This report has been automatically generated with results from
+monitoring that are publicly available on ReefCloud.ai. Neither the
+authors or the Australian Institute of Marine Science provide any
+guarantees or take responsibility for the content or interpretation of
+these results. Users are advised to verify the data and consult with
+experts for accurate interpretation and application of the information
+presented in this report.
+
+\newpage
+
+\section{Introduction}\label{introduction}
+
+This report provides a summary of the results from monitoring coral reef
+habitats in this region using ReefCloud.ai. ReefCloud.ai is an advanced
+platform designed to facilitate the collection, analysis, and
+visualization of coral reef monitoring data. By leveraging cutting-edge
+technology and data integration, ReefCloud.ai enables researchers and
+stakeholders to assess the status and trends of coral reef ecosystems
+effectively.
+
+Coral reefs are among the most diverse and valuable ecosystems on Earth,
+providing critical habitat for countless marine species, supporting
+fisheries, protecting coastlines from erosion, and contributing to local
+economies through tourism and recreation (Hoegh-Guldberg et al., 2007).
+Despite their importance, coral reefs are facing unprecedented threats
+from climate change, overfishing, pollution, and other human activities.
+Recent studies have documented significant declines in coral cover and
+reef health globally, with some regions experiencing losses of up to
+50\% in the past few decades (Hughes et al., 2017; Bruno \& Selig,
+2007).
+
+Monitoring coral reefs is essential for understanding the extent and
+drivers of these declines and for informing effective conservation and
+management actions. Regular monitoring allows scientists to detect
+changes in reef condition, identify areas of resilience, and evaluate
+the effectiveness of conservation interventions (McClanahan et al.,
+2012). However, traditional monitoring methods can be labor-intensive,
+time-consuming, and costly, limiting their scalability and frequency.
+
+ReefCloud.ai addresses these challenges by providing a user-friendly
+platform that streamlines the process of data collection, analysis, and
+reporting. The platform integrates data from various sources, including
+underwater photographs, satellite imagery, and environmental sensors, to
+provide a comprehensive view of reef health. Advanced analytical tools
+and machine learning algorithms enable the rapid processing and
+interpretation of large datasets, making it easier for researchers to
+track changes over time and identify emerging threats.
+
+In addition to its technical capabilities, ReefCloud.ai fosters
+collaboration and data sharing among researchers, conservation
+practitioners, and policymakers. By providing a centralized repository
+for reef monitoring data, the platform promotes transparency and
+facilitates the dissemination of findings to a broader audience. This
+collaborative approach enhances the collective understanding of coral
+reef dynamics and supports the development of coordinated conservation
+strategies.
+
+In summary, this report leverages the capabilities of ReefCloud.ai to
+provide an in-depth assessment of coral reef habitats in the region. The
+findings presented here will contribute to ongoing efforts to protect
+and restore these vital ecosystems for future generations.
+
+References: - Hoegh-Guldberg, O., et al.~(2007). Coral reefs under rapid
+climate change and ocean acidification. Science, 318(5857), 1737-1742. -
+Hughes, T. P., et al.~(2017). Global warming and recurrent mass
+bleaching of corals. Nature, 543(7645), 373-377. - Bruno, J. F., \&
+Selig, E. R. (2007). Regional decline of coral cover in the
+Indo-Pacific: Timing, extent, and subregional comparisons. PLoS ONE,
+2(8), e711. - McClanahan, T. R., et al.~(2012). Critical thresholds and
+tangible targets for ecosystem-based management of coral reef fisheries.
+Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
+
+\section{Methodology}\label{methodology}
+
+\subsection{Study Area}\label{study-area}
+
+The surveyed area, identified within the administrative boundaries of
+Tỉnh Khánh Hòa in Vietnam, encompasses the following details:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Number of Sites}: 90
+\item
+  \textbf{Number of Photo Quadrats}: 11553
+\item
+  \textbf{Data Contributors}: Institute of Oceanography, Vietnam, Samara
+  State University of Social Sciences and Education
+\item
+  \textbf{Source}: www.reefcloud.ai
+\end{itemize}
+
+The survey sites are distributed across the region
+(Figure~\ref{fig-map}), detailed information provided in
+Table~\ref{tbl-surveyed_sites}.
+
+\begin{figure}[H]
+
+\includegraphics[width=5in,height=\textheight,keepaspectratio]{figures/Site_Map.png}
+
+\caption{\label{fig-map}Map of survey sites in the region.}
+
+\end{figure}%
+
+\subsection{Reef Habitats Status}\label{reef-habitats-status}
+
+\subsubsection{Major Benthic cover}\label{major-benthic-cover}
+
+Hard coral cover is a key indicator of reef health, representing the
+proportion of the reef surface covered by live hard corals
+(Hexacorallia). This measure is widely accepted and used globally to
+assess the condition of coral reef habitats (Hughes et al., 2010). The
+data in this report summarizes integrated and standardized percent cover
+information from annotated photo-quadrats from multiple monitoring
+projects in ReefCloud for the selected region, made publicly available
+by project administrators on ReefCloud.ai.
+
+ReefCloud analyzes monitoring images and automatically extracts hard
+coral cover estimates from 50 points per image using Artificial
+Intelligence (sensu Gonzalez-Rivero et al., 2014). Specifically,
+ReefCloud employs Deep Learning with a Convolutional Neural Network
+model pre-trained with monitoring data from the Australian Institute of
+Marine Science. This model reduces the complexity of data describing
+benthic composition from images. Through Transfer Learning, the
+pre-trained model is adapted to specific locations and training data for
+projects in the selected region, classifying 50 points on each survey
+image to estimate the percent cover of hard coral and macroalgae.
+
+For this report, all publicly available data from ReefCloud for the
+region is compiled into a single dataset, including information about
+the sampling source, depth, location, and number of photos analyzed to
+produce hard coral and macroalgae cover. These datasets are analyzed
+using hierarchical Bayesian statistical models, which predict annual
+cover (Hard Coral and Macroalgae) and the uncertainty of these
+estimates. The posterior predictions from the model across the region
+and for each site are aggregated to median and lower/upper credible
+intervals within 95\% of the distribution quantiles (Gelman et al.,
+2013).
+
+ReefCloud uses a statistical model to generate site-specific cover
+estimates. The model considers transects per site and categorical depth
+strata (0-5m and \textgreater{} 5m depth) as replicates to produce cover
+estimates per site and year using a Hierarchical Bayesian model
+(Equation~\ref{eq-model}).
+
+\begin{equation}\phantomsection\label{eq-model}{
+\begin{multlined}
+y_{ij} \sim{} \beta_{}Bin(\pi_{ij},n) \\
+log\left(\frac{\pi_{ij}}{1-\pi_{ij}}\right) \sim{} \beta_0  + \beta_1year_2 + \beta_2depth_{ij} + \gamma_{site}
+\\
+\\
+\\Where:
+\\
+\beta_0 \sim{} N (0,1) 
+\\
+\beta_1 \sim{} N (0,1) 
+\\
+\beta_2 \sim{} N (0,1) 
+\\
+\gamma_{site} \sim{} t_{}(3,0,1) 
+\\
+\phi_{} \sim{} \gamma_{}(1,0.1)
+\\
+\end{multlined}
+}\end{equation}
+
+\subsection{Environmental Pressures}\label{environmental-pressures}
+
+\subsubsection{Thermal Stress}\label{thermal-stress}
+
+First observed in the early 1980s, mass coral bleaching has become one
+of the most visible and damaging impacts of climate change on marine
+ecosystems (Glynn, 1984; Hoegh-Guldberg, 1999). When water temperatures
+exceed the average maximum summer temperature for extended periods,
+corals can become thermally stressed, leading to coral bleaching and
+potentially death (Baker et al., 2008). Bleaching occurs when corals
+lose their symbiotic algae (zooxanthellae), which provide them with
+energy and their distinctive colors. Severe bleaching can lead to
+increased disease and mortality in corals (Hoegh-Guldberg, 1999). Over
+the past decade, coral bleaching events have become more frequent,
+extensive, and intense (Hughes et al., 2018).
+
+To monitor thermal stress, we use Degree Heating Weeks (DHW), calculated
+from satellite measurements of Sea Surface Temperature (SST) provided by
+NOAA Coral Reef Watch (Liu et al., 2014). DHW indicates the accumulated
+heat stress over the past 12 weeks (\textasciitilde3 months) and is a
+reliable predictor of coral bleaching. The units for DHW are ``degree
+C-weeks,'' combining the intensity and duration of heat stress. Research
+shows that when DHW reaches 4 degrees C-weeks or higher, widespread
+bleaching is often observed. At DHW levels above 8, significant coral
+mortality is typically evidenced (Liu et al., 2014).
+
+DHW is calculated by accumulating temperature readings that are more
+than one degree Celsius above the historical maximum monthly mean
+temperature for a given location. For example, if the temperature is 2°C
+above the summer maximum monthly mean for 4 weeks, the DHW value is 8
+DHW (2°C x 4 weeks). The thermal stress is accumulated over a 12-week
+sliding window (Eakin et al., 2010).
+
+The data in this report was produced by ReefCloud.ai using NOAA's Coral
+Reef Watch products to provide insights into thermal stress exposure for
+the reported region. NOAA's Coral Reef Watch products are widely used
+and the longest operating DHW product. ReefCloud uses NOAA's Annual
+Maximum Monthly Degree Heating Week, measured by daily global 5km
+satellite estimations of SST. Values are derived using the Version 3.1
+daily global 5Km CoralTemp satellite SST data product.
+
+This report uses the proportion of reef exposed to moderate and severe
+levels of thermal stress from DHW. This proportion is calculated in
+ReefCloud using a combination of NOAA Coral Reef Watch DHW rasters with
+spatial information on the distribution of coral reefs in this region
+from the Allen Coral Atlas and the Global Distribution of Coral Reefs
+(WCWC-008) datasets. These datasets provide spatially explicit
+information on the location and area covered by coral reefs. When
+overlaid with the DHW, the ReefCloud data platform calculates the extent
+of reef area exposed to moderate (4-8 DHW), severe (\textgreater8 DHW),
+or no major thermal stress (\textless4 DHW).
+
+The thermal stress data layer is updated annually in ReefCloud as the
+data becomes available on the NOAA Coral Reef Watch data server.
+
+References: - Glynn, P. W. (1984). Widespread coral mortality and the
+1982--83 El Niño warming event. Environmental Conservation, 11(2),
+133-146. - Hoegh-Guldberg, O. (1999). Climate change, coral bleaching
+and the future of the world's coral reefs. Marine and Freshwater
+Research, 50(8), 839-866. - Baker, A. C., Glynn, P. W., \& Riegl, B.
+(2008). Climate change and coral reef bleaching: An ecological
+assessment of long-term impacts, recovery trends and future outlook.
+Estuarine, Coastal and Shelf Science, 80(4), 435-471. - Hughes, T. P.,
+et al.~(2018). Global warming transforms coral reef assemblages. Nature,
+556(7702), 492-496. - Liu, G., et al.~(2014). Reef-scale thermal stress
+monitoring of coral ecosystems: New 5-km global products from NOAA Coral
+Reef Watch. Remote Sensing, 6(11), 11579-11606. - Eakin, C. M., et
+al.~(2010). Monitoring coral reefs from space. Oceanography, 23(4),
+118-133.
+
+\subsubsection{Tropical Cyclones}\label{tropical-cyclones}
+
+A tropical cyclone is a rapidly rotating strom system with low
+atmospheric pressure at its calm centre (i.e., eye), inward spiralling
+rainbands, and strong winds that dorms in areas of sufficiently warmn
+sea surface temperature in the world's tropical regions. In the southern
+hemisphere, these tropical storms are called cyclones and rotate in a
+clockwise directions. In the northen hemisphere, cyclones are called
+hurricanes (western hemisphere) or typhoons (eastern hemisphere) and
+rotate in an anti-clockwise direction. If sufficiently long lasting, the
+extermee winds generated by these storms can build powerful waves wich
+can severely damage coral reefs and shorelines. By modelling where
+extreme waves could form during a given cyclone, its is possible t
+predict a cyclone ``damage zone'' beyond which major damage to reefs
+will not lokely occurr. This zone is defined as the area within which
+the average height of the top one-third of the waves likely meets or
+exceeds four (04) metres (Hs - significant wave height). Here, we call
+this the 4MW (Hs \textgreater= 4m) zone. Field data from 8 past cyclones
+in the Great Barrier Reef and Western Australia has shown such zones
+perform well at captuiring severe damage - noting that because of reef
+vulnerability is the response is highly variable at \textless1km scales
+and some parts of the reefs which the damage zone will not be damaged.
+Mapping the 4MW cyclone damaage zone helps reef manages to: 1) spatially
+target management responses after major tropical cyclones to promote
+recovery at severly damaged sites, and 2) identify spatial patterns in
+historic cyclone exposure to explain habitat condition trajectories.
+
+The data presented here for tropcial cyclones is souced from
+ReefCloud.ai. ReefCloud ais to souorce the most accurate data available
+for the regions impacted by cyclone every year. This means that the
+platform collate data from various databases to provide the best
+insights possible on the estimated damage zone from tropicla cyclones in
+a given region. For cyclones within the Australian Exclusive Economic
+Zone, ReefCloud source data provided by the
+\href{http://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/}{Australian
+Bureau of Meteorology's cyclone database}. For other regions outside
+Australia, ReefCloud uses data sourced from the
+\href{https://www.ncdc.noaa.gov/ibtracs/}{International Best Archive for
+Climate Stewardship}
+
+Once formed, tropical cyclones are remarkably predictable and
+well-organised strom systems, making it possible to reconstruct the
+spatial distribution of winds and waves around the eye to build
+preducted wind and wave fields from a shore list of input data that is
+freely available in the meteorological databases abovementioned
+(location of the ye, central and ambient air pressure, size of the eye,
+size of cyclone and cyclone forward speed and direction). The 4MW damage
+zone model (Puptinen et al 2016) was used to generated the damage zone.
+This model uses thuis base data to reconstruct the spatial distribution
+of wind speeds around the cyclone eye every hour along its track. It
+then searches in each location across the studu area for locations where
+wund soeeds were sufficiently high and long-lasting to build significant
+wave heights equal or above four (04) meters. The model summarise the
+data by recording the number of hours for which such conditions
+persisted. The resultant 4MW cyclone damage zone predicts the locations
+where sufficient wave ennergy could cause major damage to coral reefs.
+
+\subsection{Temporal trends on hard coral
+cover}\label{temporal-trends-on-hard-coral-cover}
+
+\section{Results}\label{results}
+
+\subsection{Status of coral reef habitats in Tỉnh Khánh
+Hòa}\label{status-of-coral-reef-habitats-in-tux1ec9nh-khuxe1nh-huxf2a}
+
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figures/SiteCondition_HARD CORAL.png}
+
+}
+
+\caption{\label{fig-waffle}Proportion of monitored reef sites within the
+region withing condition classifications based on coral cover range: A =
+\textgreater50\% cover, B = 30-50\% cover, C = 10-30\% cover, D=
+\textless10 \% cover.}
+
+\end{figure}%
+
+In 2024, 92\% of a total of 90 monitored reef sites exhibited Hard Coral
+within 0 - 10 \% (Figure~\ref{fig-waffle})
+
+\subsection{Recent Environmental
+Disturbances}\label{recent-environmental-disturbances}
+
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figures/Disturbance_impact.png}
+
+}
+
+\caption{\label{fig-env_dist}Proportion of reef area within the region
+affected by environmental pressures during the reporting year}
+
+\end{figure}%
+
+\subsection{Temporal trends}\label{temporal-trends}
+
+\pagebreak
+
+\section{Interpretation Notes}\label{interpretation-notes}
+
+\pagebreak
+
+\section{References}\label{references}
+
+\begin{itemize}
+\tightlist
+\item
+  Hoegh-Guldberg, O., et al.~(2007). Coral reefs under rapid climate
+  change and ocean acidification. Science, 318(5857), 1737-1742.
+\item
+  Hughes, T. P., et al.~(2017). Global warming and recurrent mass
+  bleaching of corals. Nature, 543(7645), 373-377.
+\item
+  Bruno, J. F., \& Selig, E. R. (2007). Regional decline of coral cover
+  in the Indo-Pacific: Timing, extent, and subregional comparisons. PLoS
+  ONE, 2(8), e711.
+\item
+  McClanahan, T. R., et al.~(2012). Critical thresholds and tangible
+  targets for ecosystem-based management of coral reef fisheries.
+  Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
+\item
+  Glynn, P. W. (1984). Widespread coral mortality and the 1982--83 El
+  Niño warming event. Environmental Conservation, 11(2), 133-146.
+\item
+  Hoegh-Guldberg, O. (1999). Climate change, coral bleaching and the
+  future of the world's coral reefs. Marine and Freshwater Research,
+  50(8), 839-866.
+\item
+  Baker, A. C., Glynn, P. W., \& Riegl, B. (2008). Climate change and
+  coral reef bleaching: An ecological assessment of long-term impacts,
+  recovery trends and future outlook. Estuarine, Coastal and Shelf
+  Science, 80(4), 435-471.
+\item
+  Hughes, T. P., et al.~(2018). Global warming transforms coral reef
+  assemblages. Nature, 556(7702), 492-496.
+\item
+  Liu, G., et al.~(2014). Reef-scale thermal stress monitoring of coral
+  ecosystems: New 5-km global products from NOAA Coral Reef Watch.
+  Remote Sensing, 6(11), 11579-11606.
+\item
+  Eakin, C. M., et al.~(2010). Monitoring coral reefs from space.
+  Oceanography, 23(4), 118-133.
+\end{itemize}
+
+\pagebreak
+
+\section{Suppementary Materials}\label{suppementary-materials}
+
+\subsection{Site description}\label{site-description}
+
+\begin{longtable}[]{@{}llll@{}}
+
+\caption{\label{tbl-surveyed_sites}Monitoring site information}
+
+\tabularnewline
+
+\toprule\noalign{}
+Name & Longitude & Latitude & Images \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Rom island & 109.3125 & 12.17065 & 80 \\
+NW Mun island & 109.3000 & 12.17123 & 60 \\
+SW Mun island & 109.2966 & 12.16783 & 80 \\
+Bai Dua Mun island & 109.3077 & 12.16970 & 80 \\
+Dam Bay & 109.2920 & 12.18781 & 330 \\
+Hon Cau & 109.3680 & 12.28336 & 830 \\
+Bai San & 109.3273 & 12.19101 & 686 \\
+Hon Mieu North East & 109.2340 & 12.19350 & 736 \\
+Hon Tam South West & 109.2474 & 12.17161 & 500 \\
+Hon Vung & 109.3574 & 12.27284 & 706 \\
+Bai Lan & 109.2937 & 12.18215 & 679 \\
+Bai Bang & 109.3242 & 12.22084 & 491 \\
+Eo Co & 109.2435 & 12.23156 & 566 \\
+Bich Dam & 109.3191 & 12.18501 & 608 \\
+Mun Island North S2 & 109.3086 & 12.16937 & 241 \\
+Mun Island South S3 & 109.3029 & 12.16331 & 320 \\
+Hon Tam South & 109.2411 & 12.17317 & 160 \\
+Hon Mot & 109.2782 & 12.17540 & 160 \\
+Hon Rua & 109.2423 & 12.29037 & 160 \\
+NW Mun Island & 109.3000 & 12.17123 & 320 \\
+SW Mun Island & 109.2966 & 12.16783 & 320 \\
+Ran Trao & 109.2147 & 12.62694 & 320 \\
+Hon Den - Van Phong & 109.3036 & 12.60031 & 320 \\
+Bai Nom - Cam Ranh & 109.2486 & 11.83194 & 320 \\
+Bai Can Thuy Trieu & 109.2401 & 12.08650 & 160 \\
+Hon Mieu North East & 109.2340 & 12.19350 & 320 \\
+Hon Tam South West & 109.2474 & 12.17161 & 320 \\
+Cu Hin & 109.2179 & 12.13928 & 320 \\
+Song Lo & 109.2094 & 12.16830 & 160 \\
+Eo Co & 109.2435 & 12.23156 & 320 \\
+Bai Bang & 109.3242 & 12.22084 & 320 \\
+Hon Lao South East & 109.2169 & 12.35808 & 160 \\
+Hon Lao South & 109.2133 & 12.35775 & 160 \\
+Hon Theo & 109.3036 & 12.47607 & 80 \\
+Hon Do & 109.3518 & 12.47875 & 160 \\
+
+\end{longtable}
+
+\pagebreak
+
+\subsection{Writing Tips for a Technical Report on Coral Reef Monitoring
+Results}\label{writing-tips-for-a-technical-report-on-coral-reef-monitoring-results}
+
+When writing a technical report on coral reef monitoring results for a
+non-technical but knowledgeable audience, it is essential to communicate
+complex scientific information clearly and effectively. Here are some
+tips to help you achieve this:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Know Your Audience}: Understand the background and interests
+  of your audience. Tailor your language and explanations to their level
+  of knowledge, avoiding jargon and overly technical terms.
+\item
+  \textbf{Clear Structure}: Organize your report with a clear structure,
+  including an introduction, methodology, results, discussion, and
+  conclusion. Use headings and subheadings to guide the reader through
+  the content.
+\item
+  \textbf{Visual Aids}: Use charts, graphs, maps, and images to
+  illustrate key points and make data more accessible. Visual aids can
+  help convey complex information quickly and effectively.
+\item
+  \textbf{Simplify Data Presentation}: Present data in a simplified
+  manner. Use summary statistics, percentages, and averages to highlight
+  key findings. Avoid overwhelming the reader with too much raw data.
+\item
+  \textbf{Contextualize Findings}: Provide context for your findings by
+  comparing them to previous studies or historical data. Explain the
+  significance of the results and their implications for coral reef
+  conservation and management.
+\item
+  \textbf{Use Analogies and Examples}: Use analogies and real-world
+  examples to explain complex concepts. This can help make the
+  information more relatable and easier to understand.
+\item
+  \textbf{Highlight Key Messages}: Identify and emphasize the key
+  messages you want your audience to take away from the report. Use
+  bullet points, bold text, or call-out boxes to draw attention to these
+  points.
+\item
+  \textbf{Provide Recommendations}: Offer clear and actionable
+  recommendations based on your findings. Explain how these
+  recommendations can be implemented and their potential impact on coral
+  reef conservation.
+\item
+  \textbf{Cite Sources}: Include scientific references and citations to
+  support your findings and provide credibility to your report. Use a
+  consistent citation style throughout the document.
+\item
+  \textbf{Review and Edit}: Review your report for clarity, accuracy,
+  and coherence. Seek feedback from colleagues or experts to ensure that
+  your report is well-written and effectively communicates your
+  findings.
+\end{enumerate}
+
+\subsubsection{Useful Writing Resources}\label{useful-writing-resources}
+
+\begin{itemize}
+\tightlist
+\item
+  \href{https://www.writing-skills.com/knowledge-hub/technical-writing/communicate-to-non-technical-audience}{Emphasis
+  - Technical Writing}
+\item
+  \href{https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/index.html}{Purdue
+  Online Writing Lab (OWL)}
+\item
+  \href{https://www.epa.gov/sites/default/files/2015-06/documents/technical-writing.pdf}{Technical
+  Writing for Environmental Professionals}
+\item
+  \href{https://www.nature.com/scitable/ebooks/effective-communication-13953993/}{Effective
+  Communication for Scientists}
+\end{itemize}
+
+
+
+
+\end{document}

@@ -9,7 +9,6 @@ required_packages <- c(
   "scales",
   "ggmap",
   "sf",
-  "naturalearthr",
   "cowplot",
   "gt",
   "devtools"
