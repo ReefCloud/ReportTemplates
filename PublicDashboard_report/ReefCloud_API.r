@@ -28,11 +28,10 @@ library(gt)
 getRegionalSummary <- function(tierID){
 url <- paste0("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers/", tierID)
 response <- GET(url)
-data <- fromJSON(content(response, "text"))
+data <- fromJSON(content(response, "text", encoding="UTF-8"))
 info <- list(region_name=data$data$name, site_count=data$data$site_count, photo_quadrats=data$data$image_count, data_contributors=data$data$contributors, site_id=data$data$site_id, source="www.reefcloud.ai")
 return(info)
 }
-
 
 ## Get Tiers 
 getTiers<-function(tier_level=4, bbox){
@@ -41,6 +40,16 @@ url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers?tier_leve
 tier_level,bbox$xmin, bbox$ymin,bbox$xmax, bbox$ymax)
 boundary<-st_read(url)
 return(boundary)
+}
+
+#Get Regional Cover trend
+get_region_covers <- function(tier_id) {
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/surveys/%s", tier_id)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text", encoding="UTF-8"))
+  surveys <- as.data.frame(data$data)%>%select(-id) %>%
+  unnest(.,  compositions)
+  return(surveys)
 }
 
 ## Get Sites Information #######
@@ -68,7 +77,6 @@ get_sites_info <- function(info) {
   # Return a spatial dataframe containing the longitude and latitude of the sites
   sites
 }
-
 
 ##Get reef condition
 get_site_cover_cat <- function(tier_id, cover_type) {

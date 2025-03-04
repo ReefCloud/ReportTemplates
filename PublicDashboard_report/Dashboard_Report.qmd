@@ -2,7 +2,7 @@
 title: Report
 subtitle: Coral reefs habitat status and trends
 date: today
-author: Manuel Gonzalez-Rivero
+author: '@Australian Institute of Marine Science'
 
 # authors:
 #   - name: Manuel Gonzalez-Rivero
@@ -35,22 +35,22 @@ filters:
 
 format:
   docx: default
-  pdf:
-    keep-tex: true
-    include-in-header:
-        - text: \usepackage{mathtools}
-  elsevier-pdf:
-    keep-tex: true
-    journal:
-      name: ReefCloud Report
-      cite-style: authoryear
+  # pdf:
+  #   keep-tex: true
+  #   include-in-header:
+  #       - text: \usepackage{mathtools}
+  # elsevier-pdf:
+  #   keep-tex: true
+  #   journal:
+  #     name: ReefCloud Report
+  #     cite-style: authoryear
   PrettyPDF-pdf:
     keep-tex: true
     include-in-header:
         - text: \usepackage{mathtools}
     fig-pos: "H"
-output-file: "Reef_Habitat_Condition_Report"
-output-ext: "pdf"
+output-file: "Condition_Report"
+#output-ext: "pdf"
 mainfont: Arial
 engine: knitr
 execute:
@@ -60,33 +60,11 @@ execute:
   error: false
 # bibliography: references.bib
 # link-citations: true
+
+params:
+  year: 2025
+  tierID: 1808
 ---
-
-# Disclaimer
-This report has been automatically generated with results from monitoring that are publicly available on ReefCloud.ai. Neither the authors or the Australian Institute of Marine Science provide any guarantees or take responsibility for the content or interpretation of these results. Users are advised to verify the data and consult with experts for accurate interpretation and application of the information presented in this report.
-
-\newpage
-
-
-# Introduction
-
-This report provides a summary of the results from monitoring coral reef habitats in this region using ReefCloud.ai. ReefCloud.ai is an advanced platform designed to facilitate the collection, analysis, and visualization of coral reef monitoring data. By leveraging cutting-edge technology and data integration, ReefCloud.ai enables researchers and stakeholders to assess the status and trends of coral reef ecosystems effectively.
-
-Coral reefs are among the most diverse and valuable ecosystems on Earth, providing critical habitat for countless marine species, supporting fisheries, protecting coastlines from erosion, and contributing to local economies through tourism and recreation (Hoegh-Guldberg et al., 2007). Despite their importance, coral reefs are facing unprecedented threats from climate change, overfishing, pollution, and other human activities. Recent studies have documented significant declines in coral cover and reef health globally, with some regions experiencing losses of up to 50% in the past few decades (Hughes et al., 2017; Bruno & Selig, 2007).
-
-Monitoring coral reefs is essential for understanding the extent and drivers of these declines and for informing effective conservation and management actions. Regular monitoring allows scientists to detect changes in reef condition, identify areas of resilience, and evaluate the effectiveness of conservation interventions (McClanahan et al., 2012). However, traditional monitoring methods can be labor-intensive, time-consuming, and costly, limiting their scalability and frequency.
-
-ReefCloud.ai addresses these challenges by providing a user-friendly platform that streamlines the process of data collection, analysis, and reporting. The platform integrates data from various sources, including underwater photographs, satellite imagery, and environmental sensors, to provide a comprehensive view of reef health. Advanced analytical tools and machine learning algorithms enable the rapid processing and interpretation of large datasets, making it easier for researchers to track changes over time and identify emerging threats.
-
-In addition to its technical capabilities, ReefCloud.ai fosters collaboration and data sharing among researchers, conservation practitioners, and policymakers. By providing a centralized repository for reef monitoring data, the platform promotes transparency and facilitates the dissemination of findings to a broader audience. This collaborative approach enhances the collective understanding of coral reef dynamics and supports the development of coordinated conservation strategies.
-
-In summary, this report leverages the capabilities of ReefCloud.ai to provide an in-depth assessment of coral reef habitats in the region. The findings presented here will contribute to ongoing efforts to protect and restore these vital ecosystems for future generations.
-
-References: - Hoegh-Guldberg, O., et al. (2007). Coral reefs under rapid climate change and ocean acidification. Science, 318(5857), 1737-1742. - Hughes, T. P., et al. (2017). Global warming and recurrent mass bleaching of corals. Nature, 543(7645), 373-377. - Bruno, J. F., & Selig, E. R. (2007). Regional decline of coral cover in the Indo-Pacific: Timing, extent, and subregional comparisons. PLoS ONE, 2(8), e711. - McClanahan, T. R., et al. (2012). Critical thresholds and tangible targets for ecosystem-based management of coral reef fisheries. Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
-
-# Methodology
-
-## Study Area
 
 ```{r}
 #| label: Study_Area
@@ -112,19 +90,56 @@ source("plotting_functions.R")
 
 ##Load data
 API <- TRUE
-countryISO <- "VNM"
+# countryISO <- "AUS"
 fdir<-"Data/"
-tierID <- 41313
+# tierID <- 1808
 
 # Fetch data from API
 
-info <- getRegionalSummary(tierID)  #regional summary based on a Spatial Tier ID. 
+info <- getRegionalSummary(params$tierID)  #regional summary based on a Spatial Tier ID. 
 sites <- get_sites_info(info) # Extract sites from ReefCloud API
-year=2024
+# params$year<-2025
+info$params$year=params$year
 
 #Create Map
-site_map <- generate_map(data_file = NULL, api = TRUE, sites = NULL, tier_id = tierID)
+site_map <- generate_map(data_file = NULL, api = TRUE, sites = NULL, tier_id = params$tierID)
 ```
+
+::::: {layout="[60, 40]"}
+::: {#first-column}
+![](figures/Region_Map.png){width="100%" height="800" fig-align="left"}
+:::
+
+::: {#second-column}
+# Region: `r info$region_name` 
+**Country** `r unique(sites$site_country)` 
+**Report Year**: `r params$year`
+:::
+:::::
+
+::: callout-note
+# Disclaimer
+
+This report has been automatically generated with results from monitoring that are publicly available on ReefCloud.ai. Neither the authors nor the Australian Institute of Marine Science provide any guarantees or take responsibility for the content or interpretation of these results. Users are advised to verify the data and consult with experts for accurate interpretation and application of the information presented in this report.
+:::
+
+\newpage
+
+# Introduction
+
+This report provides a summary of the results from monitoring coral reef habitats in this region using [ReefCloud](www.reefcloud.ai). ReefCloud is an open-access data platform designed to facilitate the collection, analysis, and visualization of coral reef monitoring data to fain efficiency in the delivery of science for management(Australian Institute of Marine Science, 2024). By leveraging cutting-edge technology and data science, ReefCloud.ai enables researchers and stakeholders to assess the status and trends of coral reef ecosystems effectively.
+
+Coral reefs are among the most diverse and valuable ecosystems on Earth, providing critical habitat for countless marine species, supporting fisheries, protecting coastlines from erosion, and contributing to local economies through tourism and recreation (Hoegh-Guldberg et al., 2007). Despite their importance, coral reefs are facing unprecedented threats from climate change, overfishing, pollution, and other human activities. Recent studies have documented significant declines in coral cover and reef health globally, with some regions experiencing losses of up to 50% in the past few decades (Hughes et al., 2017; Bruno & Selig, 2007).
+
+Monitoring coral reefs is essential for understanding the extent and drivers of these declines and for informing effective conservation and management actions. Regular monitoring allows scientists to detect changes in reef condition, identify areas of resilience, and evaluate the effectiveness of conservation interventions (McClanahan et al., 2012). However, traditional monitoring methods can be labor-intensive, time-consuming, and costly, limiting their scalability and frequency.
+
+ReefCloud.ai addresses these challenges by providing a user-friendly platform that streamlines the process of data collection, analysis, and reporting. The platform integrates data from various sources, including photo-transects and satellite data products to provide a comprehensive view of reef health. Advanced analytical tools and machine learning algorithms enable the rapid processing and interpretation of large datasets, making it easier for researchers to track changes over time and identify emerging threats.
+
+In addition to its technical capabilities, ReefCloud fosters collaboration and data sharing among researchers, conservation practitioners, and policymakers. By providing a centralized repository for reef monitoring data, the platform promotes transparency and facilitates the dissemination of findings to a broader audience. This collaborative approach enhances the collective understanding of coral reef dynamics and supports the development of coordinated conservation strategies.
+
+In summary, this report leverages the capabilities of ReefCloud to provide an in-depth assessment of coral reef habitats in the region. The findings presented here will contribute to ongoing efforts to protect and restore these vital ecosystems for future generations. \pagebreak \# Methodology
+
+## Study Area
 
 The surveyed area, identified within the administrative boundaries of `r info$region_name` in `r unique(sites$site_country)`, encompasses the following details:
 
@@ -132,6 +147,7 @@ The surveyed area, identified within the administrative boundaries of `r info$re
 -   **Number of Photo Quadrats**: `r info$photo_quadrats`
 -   **Data Contributors**: `r info$data_contributors`
 -   **Source**: `r info$source`
+-   **Report Year**: `r params$year`
 
 The survey sites are distributed across the region (@fig-map), detailed information provided in @tbl-surveyed_sites.
 
@@ -143,20 +159,17 @@ The survey sites are distributed across the region (@fig-map), detailed informat
 knitr::include_graphics("figures/Site_Map.png")
 ```
 
-
-
 ## Benthic Analyses
 
 ### Automated Image Analyses
+
 The data in this report summarises integrated and standardized percent cover information from annotated photo-quadrats from multiple monitoring projects in ReefCloud for the selected region, made publicly available by project administrators on ReefCloud.ai.
 
 ReefCloud analyzes monitoring images and automatically extracts hard coral cover estimates from 50 points per image using Artificial Intelligence (sensu Gonzalez-Rivero et al., 2014). Specifically, ReefCloud employs Deep Learning with a Convolutional Neural Network model pre-trained with monitoring data from the Australian Institute of Marine Science. This model reduces the complexity of data describing benthic composition from images. Through Transfer Learning, the pre-trained model is adapted to specific locations and training data for projects in the selected region, classifying 50 points on each survey image to estimate the percent cover of hard coral and macroalgae.
 
-
 ### Major Benthic cover
 
-Hard coral cover is a key indicator of reef health, representing the proportion of the reef surface covered by live hard corals (Hexacorallia). This measure is widely accepted and used globally to assess the condition of coral reef habitats (Hughes et al., 2010). 
-For this report, all publicly available data from ReefCloud for the region is compiled into a single dataset, including information about the sampling source, depth, location, and number of photos analyzed to produce hard coral and macroalgae cover. These datasets are analyzed using hierarchical Bayesian statistical models, which predict annual cover (Hard Coral and Macroalgae) and the uncertainty of these estimates. The posterior predictions from the model across the region and for each site are aggregated to median and lower/upper credible intervals within 95% of the distribution quantiles (Gelman et al., 2013).
+Hard coral cover is a key indicator of reef health, representing the proportion of the reef surface covered by live hard corals (Hexacorallia). This measure is widely accepted and used globally to assess the condition of coral reef habitats (Hughes et al., 2010). For this report, all publicly available data from ReefCloud for the region is compiled into a single dataset, including information about the sampling source, depth, location, and number of photos analyzed to produce hard coral and macroalgae cover. These datasets are analyzed using hierarchical Bayesian statistical models, which predict annual cover (Hard Coral and Macroalgae) and the uncertainty of these estimates. The posterior predictions from the model across the region and for each site are aggregated to median and lower/upper credible intervals within 95% of the distribution quantiles (Gelman et al., 2013).
 
 ReefCloud uses a statistical model to generate site-specific cover estimates. The model considers transects per site and categorical depth strata (0-5m and \> 5m depth) as replicates to produce cover estimates per site and year using a Hierarchical Bayesian model (@eq-model).
 
@@ -203,16 +216,16 @@ References: - Glynn, P. W. (1984). Widespread coral mortality and the 1982–83 
 
 A tropical cyclone is a rapidly rotating storm system with low atmospheric pressure at its calm center (i.e., eye), inward spiraling rainbands, and strong winds that form in areas of sufficiently warm sea surface temperature in the world's tropical regions. In the southern hemisphere, these tropical storms are called cyclones and rotate in a clockwise direction. In the northern hemisphere, cyclones are called hurricanes (western hemisphere) or typhoons (eastern hemisphere) and rotate in an anti-clockwise direction. If sufficiently long-lasting, the extreme winds generated by these storms can build powerful waves which can severely damage coral reefs and shorelines.
 
-By modeling where extreme waves could form during a given cyclone, it is possible to predict a cyclone "damage zone" beyond which major damage to reefs will not likely occur. This zone is defined as the area within which the average height of the top one-third of the waves likely meets or exceeds four (4) meters (Hs - significant wave height). Here, we call this the 4MW (Hs >= 4m) zone. Field data from 8 past cyclones in the Great Barrier Reef and Western Australia has shown such zones perform well at capturing severe damage - noting that because reef vulnerability is highly variable at <1 km scales, some parts of the reefs within the damage zone will not be damaged. Mapping the 4MW cyclone damage zone helps reef managers to: 1) spatially target management responses after major tropical cyclones to promote recovery at severely damaged sites, and 2) identify spatial patterns in historic cyclone exposure to explain habitat condition trajectories.
+By modeling where extreme waves could form during a given cyclone, it is possible to predict a cyclone "damage zone" beyond which major damage to reefs will not likely occur. This zone is defined as the area within which the average height of the top one-third of the waves likely meets or exceeds four (4) meters (Hs - significant wave height). Here, we call this the 4MW (Hs \>= 4m) zone. Field data from 8 past cyclones in the Great Barrier Reef and Western Australia has shown such zones perform well at capturing severe damage - noting that because reef vulnerability is highly variable at \<1 km scales, some parts of the reefs within the damage zone will not be damaged. Mapping the 4MW cyclone damage zone helps reef managers to: 1) spatially target management responses after major tropical cyclones to promote recovery at severely damaged sites, and 2) identify spatial patterns in historic cyclone exposure to explain habitat condition trajectories.
 
 The data presented here for tropical cyclones is sourced from ReefCloud.ai. ReefCloud aims to source the most accurate data available for the regions impacted by cyclones every year. This means that the platform collates data from various databases to provide the best insights possible on the estimated damage zone from tropical cyclones in a given region. For cyclones within the Australian Exclusive Economic Zone, ReefCloud sources data provided by the [Australian Bureau of Meteorology's cyclone database](http://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/). For other regions outside Australia, ReefCloud uses data sourced from the [International Best Track Archive for Climate Stewardship](https://www.ncdc.noaa.gov/ibtracs/).
 
 Once formed, tropical cyclones are remarkably predictable and well-organized storm systems, making it possible to reconstruct the spatial distribution of winds and waves around the eye to build predicted wind and wave fields from a short list of input data that is freely available in the meteorological databases mentioned above (location of the eye, central and ambient air pressure, size of the eye, size of the cyclone, and cyclone forward speed and direction). The 4MW damage zone model (Puotinen et al., 2016) was used to generate the damage zone. This model uses this base data to reconstruct the spatial distribution of wind speeds around the cyclone eye every hour along its track. It then searches in each location across the study area for locations where wind speeds were sufficiently high and long-lasting to build significant wave heights equal to or above four (4) meters. The model summarizes the data by recording the number of hours for which such conditions persisted. The resultant 4MW cyclone damage zone predicts the locations where sufficient wave energy could cause major damage to coral reefs.
 
-
 ## Regional trends on hard coral cover
 
 \pagebreak
+
 # Results
 
 ## Status of coral reef habitats in `r info$region_name`
@@ -222,17 +235,21 @@ Once formed, tropical cyclones are remarkably predictable and well-organized sto
 #| fig-cap: "Proportion of monitored reef sites within the region withing condition classifications based on coral cover range: A = >50% cover, B = 30-50% cover, C = 10-30% cover, D= <10 % cover."
 #| fig-align: "center"
 cover_type="HARD CORAL"
-xdf<- get_site_cover_cat(tier_id=tierID, cover_type=cover_type) %>%
+xdf<- get_site_cover_cat(tier_id=params$tierID, cover_type=cover_type) %>%
         mutate(Proportion = Site_No / sum(Site_No),
            Proportion = round(Proportion * 100, 0))
 H.Class<-xdf$Class[which(xdf$Proportion==max(xdf$Proportion))]
 H.Proportion<-xdf$Proportion[which(xdf$Proportion==max(xdf$Proportion))]
 
-p<-generate_waffle_plots(tierID, info, cover_type)
+p<-generate_waffle_plots(params$tierID, info, cover_type)
 knitr::include_graphics(paste0('figures/', "SiteCondition_",cover_type, '.png'))
 ```
 
-In `r year`, `r H.Proportion`% of a total of `r info$site_count` monitored reef sites exhibited `r str_to_title(cover_type)` within `r xdf$Range[xdf$Class==H.Class]` (@fig-waffle)
+#### Summary:
+
+1.  In `r params$year`, `r H.Proportion`% of a total of `r info$site_count` monitored reef sites exhibited `r str_to_title(cover_type)` within `r xdf$Range[xdf$Class==H.Class]` (@fig-waffle)
+
+\pagebreak
 
 ## Recent Environmental Disturbances
 
@@ -241,14 +258,40 @@ In `r year`, `r H.Proportion`% of a total of `r info$site_count` monitored reef 
 #| fig-cap: "Proportion of reef area within the region affected by environmental pressures during the reporting year"
 #| fig-align: "center"
 
-dist<-generate_donut_chart(tierID, year, info)
+dist<-generate_donut_chart(params$tierID, params$year, info)
 knitr::include_graphics("figures/Disturbance_impact.png")
 ```
 
-## Temporal trends
+#### Summary:
 
+1.  xxx
+2.  yyyy
 
 \pagebreak
+
+## Temporal trends
+
+```{r,echo=FALSE, out.width="100%"}
+#| label: fig-temp_trend
+#| fig-cap: "Temporal trends on hard coral cover for the studied region"
+#| fig-align: "center"
+
+tcover<-temporal_cover_plot(params$tierID, info)
+hc.c<-tcover%>% filter(type=="HARD CORAL", year(date)==params$year)
+hc.l<-tcover%>% filter(type=="HARD CORAL", date==min(date))%>%mutate(year=year(date))
+hc.h<-tcover%>% filter(type=="HARD CORAL", date==max(date))%>%mutate(year=year(date))
+
+knitr::include_graphics("figures/temporal_HardCoral_cover.png")
+```
+
+#### Summary:
+
+1.  by `r params$year`, the Hard Coral cover in `r info$region_name` was estimated to be `r round(hc.c$median,0)`, varying across the region between `r round(hc.c$low,0)` and `r round(hc.c$high,0)`.
+2.  Compared to the earliest monitoring record for this region in ReefCloud, hard coral cover has changed from `r round(hc.l$median,0)` in `r hc.l$year` to `r round(hc.h$median,0)` in `r hc.h$year`.
+3.  Over the reported period (`r hc.l$year` to `r hc.h$year`), XX severe environmental disturbances affected the region. XX Tropical Cyclones and XX Marine Heatwaves impacted coral reefs in `r info$region_name`.
+
+\pagebreak
+
 # Interpretation Notes
 
 \pagebreak
@@ -271,6 +314,7 @@ knitr::include_graphics("figures/Disturbance_impact.png")
 # Suppementary Materials
 
 ## Site description
+
 ```{r, echo=FALSE, out.width="100%"}
 #| label: tbl-surveyed_sites
 #| tbl-cap: "Monitoring site information"
@@ -287,6 +331,7 @@ kable(sites.df, align="l")
 ```
 
 \pagebreak
+
 ## Tips for Writing a Technical Report on Coral Reef Monitoring Results
 
 When writing a technical report on coral reef monitoring results for a non-technical but knowledgeable audience, it is essential to communicate complex scientific information clearly and effectively. Here are some tips to help you achieve this:
@@ -317,4 +362,3 @@ When writing a technical report on coral reef monitoring results for a non-techn
 -   [Purdue Online Writing Lab (OWL)](https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/index.html)
 -   [Technical Writing for Environmental Professionals](https://www.epa.gov/sites/default/files/2015-06/documents/technical-writing.pdf)
 -   [Effective Communication for Scientists](https://www.nature.com/scitable/ebooks/effective-communication-13953993/)
-

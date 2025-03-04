@@ -181,6 +181,22 @@
 \usepackage{mathtools}
 \KOMAoption{captions}{tableheading}
 \makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
+\definecolor{quarto-callout-color}{HTML}{909090}
+\definecolor{quarto-callout-note-color}{HTML}{0758E5}
+\definecolor{quarto-callout-important-color}{HTML}{CC1914}
+\definecolor{quarto-callout-warning-color}{HTML}{EB9113}
+\definecolor{quarto-callout-tip-color}{HTML}{00A047}
+\definecolor{quarto-callout-caution-color}{HTML}{FC5300}
+\definecolor{quarto-callout-color-frame}{HTML}{acacac}
+\definecolor{quarto-callout-note-color-frame}{HTML}{4582ec}
+\definecolor{quarto-callout-important-color-frame}{HTML}{d9534f}
+\definecolor{quarto-callout-warning-color-frame}{HTML}{f0ad4e}
+\definecolor{quarto-callout-tip-color-frame}{HTML}{02b875}
+\definecolor{quarto-callout-caution-color-frame}{HTML}{fd7e14}
+\makeatother
+\makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \AtBeginDocument{%
 \ifdefined\contentsname
@@ -231,7 +247,7 @@
 \@ifundefined{codebgcolor}{\definecolor{codebgcolor}{named}{light}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, sharp corners, colback={codebgcolor}, boxrule=0pt, enhanced, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, frame hidden, colback={codebgcolor}, boxrule=0pt, enhanced, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -256,8 +272,8 @@
 }
 \makeatother
 \subtitle{Coral reefs habitat status and trends}
-\author{Manuel Gonzalez-Rivero\textsuperscript{}}
-\date{2025-03-02}
+\author{@Australian Institute of Marine Science\textsuperscript{}}
+\date{2025-03-04}
 
 \begin{document}
 \maketitle
@@ -265,25 +281,43 @@
 \pagestyle{mystyle}
 
 
-\section{Disclaimer}\label{disclaimer}
+\begin{figure}
+
+\begin{minipage}{0.60\linewidth}
+\pandocbounded{\includegraphics[keepaspectratio]{figures/Region_Map.png}}\hfill
+\end{minipage}%
+%
+\begin{minipage}{0.40\linewidth}
+
+\section{Region: Shefa}\label{region-shefa}
+
+\textbf{Country} Vanuatu \textbf{Report Year}: 2018\end{minipage}%
+
+\end{figure}%
+
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Disclaimer}, toptitle=1mm, toprule=.15mm, breakable, colback=white, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, coltitle=black, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, opacityback=0, bottomtitle=1mm, arc=.35mm, leftrule=.75mm, titlerule=0mm, left=2mm]
 
 This report has been automatically generated with results from
 monitoring that are publicly available on ReefCloud.ai. Neither the
-authors or the Australian Institute of Marine Science provide any
+authors nor the Australian Institute of Marine Science provide any
 guarantees or take responsibility for the content or interpretation of
 these results. Users are advised to verify the data and consult with
 experts for accurate interpretation and application of the information
 presented in this report.
+
+\end{tcolorbox}
 
 \newpage
 
 \section{Introduction}\label{introduction}
 
 This report provides a summary of the results from monitoring coral reef
-habitats in this region using ReefCloud.ai. ReefCloud.ai is an advanced
-platform designed to facilitate the collection, analysis, and
-visualization of coral reef monitoring data. By leveraging cutting-edge
-technology and data integration, ReefCloud.ai enables researchers and
+habitats in this region using \href{www.reefcloud.ai}{ReefCloud}.
+ReefCloud is an open-access data platform designed to facilitate the
+collection, analysis, and visualization of coral reef monitoring data to
+fain efficiency in the delivery of science for management(Australian
+Institute of Marine Science, 2024). By leveraging cutting-edge
+technology and data science, ReefCloud.ai enables researchers and
 stakeholders to assess the status and trends of coral reef ecosystems
 effectively.
 
@@ -309,13 +343,13 @@ time-consuming, and costly, limiting their scalability and frequency.
 ReefCloud.ai addresses these challenges by providing a user-friendly
 platform that streamlines the process of data collection, analysis, and
 reporting. The platform integrates data from various sources, including
-underwater photographs, satellite imagery, and environmental sensors, to
-provide a comprehensive view of reef health. Advanced analytical tools
-and machine learning algorithms enable the rapid processing and
-interpretation of large datasets, making it easier for researchers to
-track changes over time and identify emerging threats.
+photo-transects and satellite data products to provide a comprehensive
+view of reef health. Advanced analytical tools and machine learning
+algorithms enable the rapid processing and interpretation of large
+datasets, making it easier for researchers to track changes over time
+and identify emerging threats.
 
-In addition to its technical capabilities, ReefCloud.ai fosters
+In addition to its technical capabilities, ReefCloud fosters
 collaboration and data sharing among researchers, conservation
 practitioners, and policymakers. By providing a centralized repository
 for reef monitoring data, the platform promotes transparency and
@@ -324,39 +358,29 @@ collaborative approach enhances the collective understanding of coral
 reef dynamics and supports the development of coordinated conservation
 strategies.
 
-In summary, this report leverages the capabilities of ReefCloud.ai to
+In summary, this report leverages the capabilities of ReefCloud to
 provide an in-depth assessment of coral reef habitats in the region. The
 findings presented here will contribute to ongoing efforts to protect
-and restore these vital ecosystems for future generations.
-
-References: - Hoegh-Guldberg, O., et al.~(2007). Coral reefs under rapid
-climate change and ocean acidification. Science, 318(5857), 1737-1742. -
-Hughes, T. P., et al.~(2017). Global warming and recurrent mass
-bleaching of corals. Nature, 543(7645), 373-377. - Bruno, J. F., \&
-Selig, E. R. (2007). Regional decline of coral cover in the
-Indo-Pacific: Timing, extent, and subregional comparisons. PLoS ONE,
-2(8), e711. - McClanahan, T. R., et al.~(2012). Critical thresholds and
-tangible targets for ecosystem-based management of coral reef fisheries.
-Proceedings of the National Academy of Sciences, 109(41), 16282-16287.
-
-\section{Methodology}\label{methodology}
+and restore these vital ecosystems for future generations. \pagebreak \#
+Methodology
 
 \subsection{Study Area}\label{study-area}
 
 The surveyed area, identified within the administrative boundaries of
-Tỉnh Khánh Hòa in Vietnam, encompasses the following details:
+Shefa in Vanuatu, encompasses the following details:
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Number of Sites}: 90
+  \textbf{Number of Sites}: 21
 \item
-  \textbf{Number of Photo Quadrats}: 11553
+  \textbf{Number of Photo Quadrats}: 1499
 \item
-  \textbf{Data Contributors}: Institute of Oceanography, Vietnam, Samara
-  State University of Social Sciences and Education
+  \textbf{Data Contributors}: Coast Climate Oceans C2O
 \item
   \textbf{Source}: www.reefcloud.ai
+\item
+  \textbf{Report Year}: 2018
 \end{itemize}
 
 The survey sites are distributed across the region
@@ -371,16 +395,12 @@ Table~\ref{tbl-surveyed_sites}.
 
 \end{figure}%
 
-\subsection{Reef Habitats Status}\label{reef-habitats-status}
+\subsection{Benthic Analyses}\label{benthic-analyses}
 
-\subsubsection{Major Benthic cover}\label{major-benthic-cover}
+\subsubsection{Automated Image Analyses}\label{automated-image-analyses}
 
-Hard coral cover is a key indicator of reef health, representing the
-proportion of the reef surface covered by live hard corals
-(Hexacorallia). This measure is widely accepted and used globally to
-assess the condition of coral reef habitats (Hughes et al., 2010). The
-data in this report summarizes integrated and standardized percent cover
-information from annotated photo-quadrats from multiple monitoring
+The data in this report summarises integrated and standardized percent
+cover information from annotated photo-quadrats from multiple monitoring
 projects in ReefCloud for the selected region, made publicly available
 by project administrators on ReefCloud.ai.
 
@@ -395,9 +415,15 @@ pre-trained model is adapted to specific locations and training data for
 projects in the selected region, classifying 50 points on each survey
 image to estimate the percent cover of hard coral and macroalgae.
 
-For this report, all publicly available data from ReefCloud for the
-region is compiled into a single dataset, including information about
-the sampling source, depth, location, and number of photos analyzed to
+\subsubsection{Major Benthic cover}\label{major-benthic-cover}
+
+Hard coral cover is a key indicator of reef health, representing the
+proportion of the reef surface covered by live hard corals
+(Hexacorallia). This measure is widely accepted and used globally to
+assess the condition of coral reef habitats (Hughes et al., 2010). For
+this report, all publicly available data from ReefCloud for the region
+is compiled into a single dataset, including information about the
+sampling source, depth, location, and number of photos analyzed to
 produce hard coral and macroalgae cover. These datasets are analyzed
 using hierarchical Bayesian statistical models, which predict annual
 cover (Hard Coral and Macroalgae) and the uncertainty of these
@@ -505,68 +531,72 @@ al.~(2010). Monitoring coral reefs from space. Oceanography, 23(4),
 
 \subsubsection{Tropical Cyclones}\label{tropical-cyclones}
 
-A tropical cyclone is a rapidly rotating strom system with low
-atmospheric pressure at its calm centre (i.e., eye), inward spiralling
-rainbands, and strong winds that dorms in areas of sufficiently warmn
-sea surface temperature in the world's tropical regions. In the southern
+A tropical cyclone is a rapidly rotating storm system with low
+atmospheric pressure at its calm center (i.e., eye), inward spiraling
+rainbands, and strong winds that form in areas of sufficiently warm sea
+surface temperature in the world's tropical regions. In the southern
 hemisphere, these tropical storms are called cyclones and rotate in a
-clockwise directions. In the northen hemisphere, cyclones are called
+clockwise direction. In the northern hemisphere, cyclones are called
 hurricanes (western hemisphere) or typhoons (eastern hemisphere) and
-rotate in an anti-clockwise direction. If sufficiently long lasting, the
-extermee winds generated by these storms can build powerful waves wich
-can severely damage coral reefs and shorelines. By modelling where
-extreme waves could form during a given cyclone, its is possible t
-predict a cyclone ``damage zone'' beyond which major damage to reefs
-will not lokely occurr. This zone is defined as the area within which
-the average height of the top one-third of the waves likely meets or
-exceeds four (04) metres (Hs - significant wave height). Here, we call
+rotate in an anti-clockwise direction. If sufficiently long-lasting, the
+extreme winds generated by these storms can build powerful waves which
+can severely damage coral reefs and shorelines.
+
+By modeling where extreme waves could form during a given cyclone, it is
+possible to predict a cyclone ``damage zone'' beyond which major damage
+to reefs will not likely occur. This zone is defined as the area within
+which the average height of the top one-third of the waves likely meets
+or exceeds four (4) meters (Hs - significant wave height). Here, we call
 this the 4MW (Hs \textgreater= 4m) zone. Field data from 8 past cyclones
 in the Great Barrier Reef and Western Australia has shown such zones
-perform well at captuiring severe damage - noting that because of reef
-vulnerability is the response is highly variable at \textless1km scales
-and some parts of the reefs which the damage zone will not be damaged.
-Mapping the 4MW cyclone damaage zone helps reef manages to: 1) spatially
-target management responses after major tropical cyclones to promote
-recovery at severly damaged sites, and 2) identify spatial patterns in
-historic cyclone exposure to explain habitat condition trajectories.
+perform well at capturing severe damage - noting that because reef
+vulnerability is highly variable at \textless1 km scales, some parts of
+the reefs within the damage zone will not be damaged. Mapping the 4MW
+cyclone damage zone helps reef managers to: 1) spatially target
+management responses after major tropical cyclones to promote recovery
+at severely damaged sites, and 2) identify spatial patterns in historic
+cyclone exposure to explain habitat condition trajectories.
 
-The data presented here for tropcial cyclones is souced from
-ReefCloud.ai. ReefCloud ais to souorce the most accurate data available
-for the regions impacted by cyclone every year. This means that the
-platform collate data from various databases to provide the best
-insights possible on the estimated damage zone from tropicla cyclones in
+The data presented here for tropical cyclones is sourced from
+ReefCloud.ai. ReefCloud aims to source the most accurate data available
+for the regions impacted by cyclones every year. This means that the
+platform collates data from various databases to provide the best
+insights possible on the estimated damage zone from tropical cyclones in
 a given region. For cyclones within the Australian Exclusive Economic
-Zone, ReefCloud source data provided by the
+Zone, ReefCloud sources data provided by the
 \href{http://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/}{Australian
 Bureau of Meteorology's cyclone database}. For other regions outside
 Australia, ReefCloud uses data sourced from the
-\href{https://www.ncdc.noaa.gov/ibtracs/}{International Best Archive for
-Climate Stewardship}
+\href{https://www.ncdc.noaa.gov/ibtracs/}{International Best Track
+Archive for Climate Stewardship}.
 
 Once formed, tropical cyclones are remarkably predictable and
-well-organised strom systems, making it possible to reconstruct the
+well-organized storm systems, making it possible to reconstruct the
 spatial distribution of winds and waves around the eye to build
-preducted wind and wave fields from a shore list of input data that is
-freely available in the meteorological databases abovementioned
-(location of the ye, central and ambient air pressure, size of the eye,
-size of cyclone and cyclone forward speed and direction). The 4MW damage
-zone model (Puptinen et al 2016) was used to generated the damage zone.
-This model uses thuis base data to reconstruct the spatial distribution
-of wind speeds around the cyclone eye every hour along its track. It
-then searches in each location across the studu area for locations where
-wund soeeds were sufficiently high and long-lasting to build significant
-wave heights equal or above four (04) meters. The model summarise the
-data by recording the number of hours for which such conditions
-persisted. The resultant 4MW cyclone damage zone predicts the locations
-where sufficient wave ennergy could cause major damage to coral reefs.
+predicted wind and wave fields from a short list of input data that is
+freely available in the meteorological databases mentioned above
+(location of the eye, central and ambient air pressure, size of the eye,
+size of the cyclone, and cyclone forward speed and direction). The 4MW
+damage zone model (Puotinen et al., 2016) was used to generate the
+damage zone. This model uses this base data to reconstruct the spatial
+distribution of wind speeds around the cyclone eye every hour along its
+track. It then searches in each location across the study area for
+locations where wind speeds were sufficiently high and long-lasting to
+build significant wave heights equal to or above four (4) meters. The
+model summarizes the data by recording the number of hours for which
+such conditions persisted. The resultant 4MW cyclone damage zone
+predicts the locations where sufficient wave energy could cause major
+damage to coral reefs.
 
-\subsection{Temporal trends on hard coral
-cover}\label{temporal-trends-on-hard-coral-cover}
+\subsection{Regional trends on hard coral
+cover}\label{regional-trends-on-hard-coral-cover}
+
+\pagebreak
 
 \section{Results}\label{results}
 
-\subsection{Status of coral reef habitats in Tỉnh Khánh
-Hòa}\label{status-of-coral-reef-habitats-in-tux1ec9nh-khuxe1nh-huxf2a}
+\subsection{Status of coral reef habitats in
+Shefa}\label{status-of-coral-reef-habitats-in-shefa}
 
 \begin{figure}[H]
 
@@ -583,8 +613,17 @@ region withing condition classifications based on coral cover range: A =
 
 \end{figure}%
 
-In 2024, 92\% of a total of 90 monitored reef sites exhibited Hard Coral
-within 0 - 10 \% (Figure~\ref{fig-waffle})
+\paragraph{Summary:}\label{summary}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  In 2018, 73\% of a total of 21 monitored reef sites exhibited Hard
+  Coral within 0 - 10 \% (Figure~\ref{fig-waffle})
+\end{enumerate}
+
+\pagebreak
 
 \subsection{Recent Environmental
 Disturbances}\label{recent-environmental-disturbances}
@@ -602,7 +641,50 @@ affected by environmental pressures during the reporting year}
 
 \end{figure}%
 
+\paragraph{Summary:}\label{summary-1}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  xxx
+\item
+  yyyy
+\end{enumerate}
+
+\pagebreak
+
 \subsection{Temporal trends}\label{temporal-trends}
+
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figures/temporal_HardCoral_cover.png}
+
+}
+
+\caption{\label{fig-temp_trend}Temporal trends on hard coral cover for
+the studied region}
+
+\end{figure}%
+
+\paragraph{Summary:}\label{summary-2}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  by 2018, the Hard Coral cover in Shefa was estimated to be 27, varying
+  across the region between 8 and 50.
+\item
+  Compared to the earliest monitoring record for this region in
+  ReefCloud, hard coral cover has changed from 18 in 2014 to 27 in 2018.
+\item
+  Over the reported period (2014 to 2018), XX severe environmental
+  disturbances affected the region. XX Tropical Cyclones and XX Marine
+  Heatwaves impacted coral reefs in Shefa.
+\end{enumerate}
 
 \pagebreak
 
@@ -670,48 +752,31 @@ Name & Longitude & Latitude & Images \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Rom island & 109.3125 & 12.17065 & 80 \\
-NW Mun island & 109.3000 & 12.17123 & 60 \\
-SW Mun island & 109.2966 & 12.16783 & 80 \\
-Bai Dua Mun island & 109.3077 & 12.16970 & 80 \\
-Dam Bay & 109.2920 & 12.18781 & 330 \\
-Hon Cau & 109.3680 & 12.28336 & 830 \\
-Bai San & 109.3273 & 12.19101 & 686 \\
-Hon Mieu North East & 109.2340 & 12.19350 & 736 \\
-Hon Tam South West & 109.2474 & 12.17161 & 500 \\
-Hon Vung & 109.3574 & 12.27284 & 706 \\
-Bai Lan & 109.2937 & 12.18215 & 679 \\
-Bai Bang & 109.3242 & 12.22084 & 491 \\
-Eo Co & 109.2435 & 12.23156 & 566 \\
-Bich Dam & 109.3191 & 12.18501 & 608 \\
-Mun Island North S2 & 109.3086 & 12.16937 & 241 \\
-Mun Island South S3 & 109.3029 & 12.16331 & 320 \\
-Hon Tam South & 109.2411 & 12.17317 & 160 \\
-Hon Mot & 109.2782 & 12.17540 & 160 \\
-Hon Rua & 109.2423 & 12.29037 & 160 \\
-NW Mun Island & 109.3000 & 12.17123 & 320 \\
-SW Mun Island & 109.2966 & 12.16783 & 320 \\
-Ran Trao & 109.2147 & 12.62694 & 320 \\
-Hon Den - Van Phong & 109.3036 & 12.60031 & 320 \\
-Bai Nom - Cam Ranh & 109.2486 & 11.83194 & 320 \\
-Bai Can Thuy Trieu & 109.2401 & 12.08650 & 160 \\
-Hon Mieu North East & 109.2340 & 12.19350 & 320 \\
-Hon Tam South West & 109.2474 & 12.17161 & 320 \\
-Cu Hin & 109.2179 & 12.13928 & 320 \\
-Song Lo & 109.2094 & 12.16830 & 160 \\
-Eo Co & 109.2435 & 12.23156 & 320 \\
-Bai Bang & 109.3242 & 12.22084 & 320 \\
-Hon Lao South East & 109.2169 & 12.35808 & 160 \\
-Hon Lao South & 109.2133 & 12.35775 & 160 \\
-Hon Theo & 109.3036 & 12.47607 & 80 \\
-Hon Do & 109.3518 & 12.47875 & 160 \\
+Inside channel Moso & 168.2702 & -17.54199 & 95 \\
+Southeast Moso & 168.2364 & -17.55507 & 132 \\
+Northwest Lelepa 3 & 168.2125 & -17.61288 & 63 \\
+Siviri & 168.3280 & -17.52205 & 131 \\
+Northeast Lelepa & 168.2199 & -17.59417 & 133 \\
+Emua & 168.3759 & -17.53729 & 61 \\
+West Emao & 168.4734 & -17.47473 & 65 \\
+Tanoliu & 168.2712 & -17.56666 & 59 \\
+Saint Lawrence & 168.3359 & -17.54072 & 69 \\
+West Moso & 168.2528 & -17.51965 & 63 \\
+Northwest Lelepa & 168.2120 & -17.57467 & 65 \\
+Krystal Waters & 168.2434 & -17.59278 & 107 \\
+Northeast Nguna & 168.3806 & -17.46080 & 61 \\
+Southeast Nguna & 168.3877 & -17.47053 & 77 \\
+Mangaliliu & 168.2061 & -17.63028 & 62 \\
+Northwest Lelepa 2 & 168.1961 & -17.59446 & 64 \\
+West Paonangisu & 168.3977 & -17.52733 & 111 \\
+Lakenasua & 168.3557 & -17.53925 & 81 \\
 
 \end{longtable}
 
 \pagebreak
 
-\subsection{Writing Tips for a Technical Report on Coral Reef Monitoring
-Results}\label{writing-tips-for-a-technical-report-on-coral-reef-monitoring-results}
+\subsection{Tips for Writing a Technical Report on Coral Reef Monitoring
+Results}\label{tips-for-writing-a-technical-report-on-coral-reef-monitoring-results}
 
 When writing a technical report on coral reef monitoring results for a
 non-technical but knowledgeable audience, it is essential to communicate
