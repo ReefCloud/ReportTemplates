@@ -80,14 +80,14 @@ temporal_cover_plot <- function(tier_id, info) {
   # get_disturbances
   events<- get_disturbance_ext(tier_id, e_type = "thermal_stress") %>%
     filter(severity > 1, percentage_total_reef > 0.05) %>%
-    mutate(Dist = "DHW",Year=Year-0.5, icon="figures/icons/bleaching.png") %>%
+    mutate(Dist = "DHW",Year=Year-0.5, icon="_media/icons/bleaching.png") %>%
     select(Year, Dist, icon) %>%
     distinct() %>%
     bind_rows(
       get_disturbance_ext(tier_id, e_type = "storm_exposure_year") %>%
         select(Year, severity, percentage_total_reef) %>%
         filter(severity > 1, percentage_total_reef > 0.05) %>%
-        mutate(Dist = "TC",Year=Year-0.5, icon="figures/icons/cyclone.png") %>%
+        mutate(Dist = "TC",Year=Year-0.5, icon="_media/icons/cyclone.png") %>%
         select(Year, Dist,icon) %>%
         distinct()
     )%>%
