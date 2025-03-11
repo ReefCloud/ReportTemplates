@@ -87,7 +87,7 @@ get_site_cover_cat <- function(tier_id, cover_type) {
   data <- fromJSON(content(response, "text"))
 
   last_year_pos<-which(data$year==max(data$year))
-  df<-data.frame(Class=c("D","D", "B", "C", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+  df<-data.frame(Class=c("D","B", "C", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
   mutate(Year=data$year[[last_year_pos]])%>%
   group_by(Year, Class)%>%
   summarise(Site_No=sum(site_num))%>%

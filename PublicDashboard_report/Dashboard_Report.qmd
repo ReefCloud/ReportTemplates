@@ -120,7 +120,7 @@ site_map <- generate_map(data_file = NULL, api = TRUE, sites = NULL, tier_id = p
 ::: callout-note
 # Disclaimer
 
-This report has been automatically generated with results from monitoring that are publicly available on ReefCloud.ai. Neither the authors nor the Australian Institute of Marine Science provide any guarantees or take responsibility for the content or interpretation of these results. Users are advised to verify the data and consult with experts for accurate interpretation and application of the information presented in this report.
+This report has been automatically generated with results from monitoring that are publicly available on ReefCloud.ai. Neither the authors nor the Australian Institute of Marine Science provide any guarantees or take responsibility for the content or interpretation of these results. Users are advised to verify the data and consult with experts for accurate interpretation and application of the information presented in this report. 
 :::
 
 \newpage
@@ -286,7 +286,7 @@ knitr::include_graphics("figures/temporal_HardCoral_cover.png")
 
 #### Summary:
 
-1.  by `r params$year`, the Hard Coral cover in `r info$region_name` was estimated to be `r round(hc.c$median,0)`, varying across the region between `r round(hc.c$low,0)` and `r round(hc.c$high,0)`.
+1.  by `r params$year`, the Hard Coral cover in `r info$region_name` was estimated to be `r round(hc.c$median,0)` %, varying across the region between `r round(hc.c$low,0)` and `r round(hc.c$high,0)`.
 2.  Compared to the earliest monitoring record for this region in ReefCloud, hard coral cover has changed from `r round(hc.l$median,0)` in `r hc.l$year` to `r round(hc.h$median,0)` in `r hc.h$year`.
 3.  Over the reported period (`r hc.l$year` to `r hc.h$year`), XX severe environmental disturbances affected the region. XX Tropical Cyclones and XX Marine Heatwaves impacted coral reefs in `r info$region_name`.
 
