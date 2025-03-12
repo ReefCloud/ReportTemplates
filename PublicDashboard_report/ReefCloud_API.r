@@ -75,10 +75,10 @@ get_sites_info <- function(info) {
     }
   sites <- st_as_sf(sites, coords = c("site_longitude", "site_latitude"), crs = 4326)
   # Return a spatial dataframe containing the longitude and latitude of the sites
-  sites
+  return(sites)
 }
 
-##Get reef condition
+##Get reef condition (HC)
 get_site_cover_cat <- function(tier_id, cover_type) {
   cover_type<-str_replace_all(cover_type, " ", "%20")
   url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
@@ -87,7 +87,7 @@ get_site_cover_cat <- function(tier_id, cover_type) {
   data <- fromJSON(content(response, "text"))
 
   last_year_pos<-which(data$year==max(data$year))
-  df<-data.frame(Class=c("D","B", "C", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+  df<-data.frame(Class=c("D", "C", "B", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
   mutate(Year=data$year[[last_year_pos]])%>%
   group_by(Year, Class)%>%
   summarise(Site_No=sum(site_num))%>%
@@ -96,7 +96,29 @@ get_site_cover_cat <- function(tier_id, cover_type) {
   Class =="B" ~ "30 - 50 %",
   .default= ">50%"
    ))
+ # Return a dataframe containing number of sites at each cover category
+  return(df)
+}
 
+##Get reef condition (MA)
+get_site_cover_cat2 <- function(tier_id, cover_type) {
+  cover_type<-str_replace_all(cover_type, " ", "%20")
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
+                 tier_id, cover_type)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text"))
+  
+  last_year_pos<-which(data$year==max(data$year))
+  df<-data.frame(Class=c("A", "B", "C", "D", "D"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+    mutate(Year=data$year[[last_year_pos]])%>%
+    group_by(Year, Class)%>%
+    summarise(Site_No=sum(site_num))%>%
+    mutate(Range = case_when(Class =="D" ~ ">50%",
+                             Class =="C" ~ "30 - 50 %",
+                             Class =="B" ~ "10 - 30 %",
+                             .default= "<10%"
+    ))
+  # Return a dataframe containing number of sites at each cover category (reversed from HC)
   return(df)
 }
 
@@ -109,6 +131,7 @@ get_disturbance_ext <- function(tier_id, e_type) {
   data <- fromJSON(content(response, "text", encoding="UTF-8"))
   data<-data$data %>%
     mutate(Year=year(start_date))
+  # Return a dataframe containing thermal and storm exposure stress categories
   return(data)
 }
 

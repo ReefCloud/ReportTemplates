@@ -68,6 +68,54 @@ generate_waffle_plots <- function(tier_id, info, cover_type) {
   return(p)
 }
 
+# Function to generate waffle plots (MA)
+generate_waffle_plots2 <- function(tier_id, info, cover_type) {
+  xdf <- get_site_cover_cat2(tier_id = tier_id, cover_type = cover_type) %>%
+    mutate(
+      Proportion = Site_No / sum(Site_No),
+      Proportion = round(Proportion * 100, 0)
+    )
+  # logo_grob <- load_logo()
+  possible_classes <- c("A", "B", "C", "D")
+  p <- xdf %>%
+    ggplot(aes(fill = Class, values = Site_No)) +
+    geom_waffle(color = "white", size = 1.125, n_rows = 10, make_proportional = TRUE) +
+    scale_x_discrete(expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0)) +
+    scale_fill_manual(values = c(A = "#00734D", B = "#F0C918", C = "#F47721", D = "#ED1C24"), name = NULL) +
+    coord_equal() +
+    labs(
+      title = paste("Coral Reef Habitat Condition", info$region_name, "Region"),
+      subtitle = sprintf("Distribution of sites by %s categories", str_to_title(cover_type)),
+      caption = str_wrap(sprintf("Data Credits: %s", paste(info$data_contributors, collapse = ". ")), 70)
+    ) +
+    theme_ipsum(grid = "") +
+    theme_enhance_waffle() +
+    theme(
+      legend.position = "bottom",
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.title = element_text(size = 14, face = "bold"),
+      plot.subtitle = element_text(size = 12),
+      plot.caption = element_text(size = 10)
+    ) +
+    annotate("text",
+             x = Inf,
+             y = -Inf,
+             label = "Source: ReefCloud.ai",
+             hjust = 1.1,
+             vjust = -1.1,
+             size = 3,
+             color = "black"
+    )
+  
+  ggsave(p,
+         filename = paste0("figures/", "SiteCondition_", cover_type, ".png"),
+         bg = "transparent", width = 8, height = 8
+  )
+  
+  return(p)
+}
+
 # Function to generate temporal cover plot
 temporal_cover_plot <- function(tier_id, info) {
   require(ggimage)
@@ -99,7 +147,7 @@ temporal_cover_plot <- function(tier_id, info) {
     ggplot() +
     geom_pointrange(aes(x = year, y = median, ymin = low, ymax = high), size = 2, color = "black",linetype="dashed") +
     geom_line(aes(x = year, y = median), size = 1.5) +
-    geom_image(data = events, mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"])-max(s.df$high[s.df$type=="HARD CORAL"])/20, image="figures/icons/down_arrow.png")) +
+    geom_image(data = events, mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"])-max(s.df$high[s.df$type=="HARD CORAL"])/20, image="_media/icons/down_arrow.png")) +
     geom_image(data = events, 
     mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"]), image=icon),  position=position_dodge(width=1)) +
     labs(
@@ -242,7 +290,7 @@ generate_map <- function(data_file = NULL, api = TRUE, sites = NULL, tier_id = N
 }
 
 # Function to generate donut chart
-generate_donut_chart <- function(tier_id, y, info) {
+generate_donut_chart <- function(tier_id, yr, info) {
   require(cowplot)
   require(tidyverse)
   require(ggplot2)
@@ -256,7 +304,7 @@ generate_donut_chart <- function(tier_id, y, info) {
       .default = "No Major Stress"
     )) %>%
     select(tier_id, Year, severity, Stress_Cat, percentage_total_reef) %>%
-    filter(Year == 2024) %>%
+    filter(Year == params$year) %>%
     reframe(add_row(cur_data(), severity = 0, Stress_Cat = "No Major Stress", percentage_total_reef = 1 - sum(cur_data()$percentage_total_reef)))
 
   dhw.df <- dhw.df %>%
@@ -284,7 +332,7 @@ generate_donut_chart <- function(tier_id, y, info) {
     ) +
     labs(
       title = "Thermal Stress",
-      subtitle = sprintf("Region: %s\nYear: %s", str_to_title(info$region_name), y),
+      subtitle = sprintf("Region: %s\nYear: %s", str_to_title(info$region_name), yr),
       fill = "Thermal Stress",
       caption = str_wrap("Source: ReefCloud.ai. Data Credits: Australian Institute of Marine Science, NOAA Coral Reef Watch, Allen Coral Atlas", 70)
     )
@@ -297,7 +345,7 @@ generate_donut_chart <- function(tier_id, y, info) {
       .default = "No Major Stress"
     )) %>%
     select(tier_id, Year, severity, Stress_Cat, percentage_total_reef) %>%
-    filter(Year == 2024) %>%
+    filter(Year == params$year) %>%
     reframe(add_row(cur_data(), severity = 0, Stress_Cat = "No Major Stress", percentage_total_reef = 1 - sum(cur_data()$percentage_total_reef)))
 
   tc.df <- tc.df %>%
@@ -362,11 +410,14 @@ generate_donut_chart <- function(tier_id, y, info) {
 
   ggsave("figures/Disturbance_impact.png", combined_plot, bg = "transparent", width = 16, height = 8)
 
-  dist.df <- dhw.df %>%
-    mutate(Disturbance = "Thermal Stress") %>%
-    bind_rows(tc.df %>%
-      mutate(Disturbance = "Tropical Cyclones"))
-  return(dist.df)
+  list.dist <- list()
+  list.dist[[1]] <- dhw.df %>%
+    mutate(Disturbance = "Thermal Stress")
+  list.dist[[2]] <- tc.df %>%
+      mutate(Disturbance = "Tropical Cyclones")
+  
+  
+  return(list.dist)
 }
 
 theme_Publication <- function(base_size = 14, base_family = "sans") {
