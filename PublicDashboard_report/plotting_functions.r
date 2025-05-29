@@ -68,9 +68,9 @@ generate_waffle_plots <- function(tier_id, info, cover_type) {
   return(p)
 }
 
-# Function to generate waffle plots (MA)
-generate_waffle_plots2 <- function(tier_id, info, cover_type) {
-  xdf <- get_site_cover_cat2(tier_id = tier_id, cover_type = cover_type) %>%
+# Function to generate waffle plots (HC)
+generate_waffle_plots_hc <- function(tier_id, info, cover_type) {
+  xdf <- get_site_cover_cat_hc(tier_id = tier_id, cover_type = cover_type) %>%
     mutate(
       Proportion = Site_No / sum(Site_No),
       Proportion = round(Proportion * 100, 0)
@@ -82,7 +82,59 @@ generate_waffle_plots2 <- function(tier_id, info, cover_type) {
     geom_waffle(color = "white", size = 1.125, n_rows = 10, make_proportional = TRUE) +
     scale_x_discrete(expand = c(0, 0)) +
     scale_y_discrete(expand = c(0, 0)) +
-    scale_fill_manual(values = c(A = "#00734D", B = "#F0C918", C = "#F47721", D = "#ED1C24"), name = NULL) +
+    scale_fill_manual(values = c(A = "#ae017e", B = "#f768a1", C = "#fbb4b9", D = "#feebe2"),
+                      labels = c("A (> 50%)", "B (30 - 50%)", "C (10 - 30%)", "D (0 - 10%)"), 
+                      name = NULL) +
+    coord_equal() +
+    labs(
+      title = paste("Coral Reef Habitat Condition", info$region_name, "Region"),
+      subtitle = sprintf("Distribution of sites by %s categories", str_to_title(cover_type)),
+      caption = str_wrap(sprintf("Data Credits: %s", paste(info$data_contributors, collapse = ". ")), 70)
+    ) +
+    theme_ipsum(grid = "") +
+    theme_enhance_waffle() +
+    theme(
+      legend.position = "bottom",
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.title = element_text(size = 14, face = "bold"),
+      plot.subtitle = element_text(size = 12),
+      plot.caption = element_text(size = 10)
+    ) +
+    annotate("text",
+             x = Inf,
+             y = -Inf,
+             label = "Source: ReefCloud.ai",
+             hjust = 1.1,
+             vjust = -1.1,
+             size = 3,
+             color = "black"
+    )
+  
+  ggsave(p,
+         filename = paste0("figures/", "SiteCondition_", cover_type, ".png"),
+         bg = "transparent", width = 8, height = 8
+  )
+  
+  return(p)
+}
+
+# Function to generate waffle plots (MA)
+generate_waffle_plots_ma <- function(tier_id, info, cover_type) {
+  xdf <- get_site_cover_cat_ma(tier_id = tier_id, cover_type = cover_type) %>%
+    mutate(
+      Proportion = Site_No / sum(Site_No),
+      Proportion = round(Proportion * 100, 0)
+    )
+  # logo_grob <- load_logo()
+  possible_classes <- c("A", "B", "C", "D")
+  p <- xdf %>%
+    ggplot(aes(fill = Class, values = Site_No)) +
+    geom_waffle(color = "white", size = 1.125, n_rows = 10, make_proportional = TRUE) +
+    scale_x_discrete(expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0)) +
+    scale_fill_manual(values = c(A = "#238443", B = "#78c679", C = "#c2e699", D = "#ffffcc"), 
+                      labels = c("A (0-10%)", "B (10-30%)", "C (30-50%)", "D (>50%)"), 
+                      name = NULL) +
     coord_equal() +
     labs(
       title = paste("Coral Reef Habitat Condition", info$region_name, "Region"),
