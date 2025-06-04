@@ -11,6 +11,8 @@ library(RCurl)
 library(rsvg)
 library(scales)
 library(ggmap)
+library(rnaturalearth)
+library(patchwork)
 source("ReefCloud_API.r")
 
 # Helper function to load logo ######

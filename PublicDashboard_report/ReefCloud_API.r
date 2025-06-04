@@ -175,7 +175,7 @@ get_site_cover_cat <- function(tier_id, cover_type) {
 
 ##Get reef condition (HC, coded for categories)
 get_site_cover_cat_hc <- function(tier_id, cover_type) {
-  cover_type <- c("HARD%20CORAL")
+  cover_type <- str_replace_all(cover_type, " ", "%20")
   url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
                  tier_id, cover_type)
   response <- GET(url)
@@ -196,7 +196,7 @@ get_site_cover_cat_hc <- function(tier_id, cover_type) {
 
 ##Get reef condition (MA, coded for categories)
 get_site_cover_cat_ma <- function(tier_id, cover_type) {
-  cover_type <- c("MACROALGAE")
+  cover_type <- str_replace_all(cover_type, " ", "%20")
   url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
                  tier_id, cover_type)
   response <- GET(url)
