@@ -20,6 +20,16 @@ load_logo <- function() {
   grid::rasterGrob(logo, interpolate = TRUE)
 }
 
+# Helper function for integer axis
+integer_breaks <- function(n = 5, ...) {
+fxn <- function(x) {
+breaks <- floor(pretty(x, n, ...))
+names(breaks) <- attr(breaks, "labels")
+breaks
+}
+return(fxn)
+}
+
 # Function to generate waffle plots
 generate_waffle_plots <- function(tier_id, info, cover_type) {
   xdf <- get_site_cover_cat(tier_id = tier_id, cover_type = cover_type) %>%
@@ -99,7 +109,7 @@ temporal_cover_plot <- function(tier_id, info) {
     ggplot() +
     geom_pointrange(aes(x = year, y = median, ymin = low, ymax = high), size = 2, color = "black",linetype="dashed") +
     geom_line(aes(x = year, y = median), size = 1.5) +
-    geom_image(data = events, mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"])-max(s.df$high[s.df$type=="HARD CORAL"])/20, image="figures/icons/down_arrow.png")) +
+    geom_image(data = events, mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"])-max(s.df$high[s.df$type=="HARD CORAL"])/20, image="_media/icons/down_arrow.png")) +
     geom_image(data = events, 
     mapping=aes(x=Year, y=max(s.df$high[s.df$type=="HARD CORAL"]), image=icon),  position=position_dodge(width=1)) +
     labs(
@@ -109,7 +119,7 @@ temporal_cover_plot <- function(tier_id, info) {
       y = "Cover (%)",
       caption = "Source: ReefCloud.ai"
     ) +
-    scale_x_continuous(breaks = breaks_pretty()) +
+    scale_x_continuous(breaks = integer_breaks()) +
     theme_ipsum(grid = "") +
     theme(
       legend.position = "bottom",
