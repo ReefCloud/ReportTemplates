@@ -1,0 +1,347 @@
+---
+title: Report
+subtitle: Coral reefs habitat status and trends
+date: today
+author: 'Australian Institute of Marine Science'
+
+# authors:
+#   - name: Manuel Gonzalez-Rivero
+#     affiliations:
+#       - ref: aims
+#     email: m.gonzalezrivero@aims.gov.au
+#     corresponding: true
+#     orcid: 0000-0003-0252-584X
+#     equal-contributor: false
+#   - name: Second Author
+#     affiliations:
+#       - ref: uf
+#     email: xx@xxx.com
+#     corresponding: false
+#     orcid: 0000-0003-0252-584X
+#     equal-contributor: false
+
+# affiliations: 
+#   - id: aims
+#     name: Australian Institute of Marine Science, Townsville. Queensland 4810. Australia
+#   - id: uf
+#     name: Institute, City. State Postcode. Country
+
+license: "CC BY"
+crossref:
+  lof-title: "List of Figures"
+
+filters:
+  - authors-block
+
+format:
+  docx: default
+  # pdf:
+  #   keep-tex: true
+  #   include-in-header:
+  #       - text: \usepackage{mathtools}
+  # elsevier-pdf:
+  #   keep-tex: true
+  #   journal:
+  #     name: ReefCloud Report
+  #     cite-style: authoryear
+  #PrettyPDF-pdf:
+  #  keep-tex: true
+  #  include-in-header:
+  #      - text: \usepackage{mathtools}
+  #  fig-pos: "H"
+output-file: "Condition_Report"
+output-ext: "pdf"
+mainfont: Arial
+engine: knitr
+execute:
+  eval: true
+  echo: false
+  warning: false
+  error: false
+bibliography: references.bib
+# link-citations: true
+
+params:
+  year: 2016
+  tierID: 1874
+---
+
+::: callout-important
+## Disclaimer
+
+This report has been automatically generated from the [ReefCloud public dashboard](https://reefcloud.ai/dashboard/ "ReefCloud Dashboard") monitoring data, based on project data that have been made available by the project authors. Users are advised to verify the data are appropriate and consult the project authors for accurate interpretation of the results presented in this report. The Australian Institute of Marine Science and the contributors do not provide any guarantees for the results or their interpretation.
+:::
+
+```{r}
+#| label: Study_Area
+#| include: false
+#source("install_packages.R")
+library(tidyverse)
+library(sf)
+source("ReefCloud_API.R")
+source("plotting_functions.R")
+
+## Get tier ID
+#In the ReefCloud Dashboard a tier is a spatial polygon that defines the boundaries of a region. 
+#There are 4 tier type in ReefCloud:
+#* Tier 2= Exclusive Economic Zones (EEZ) or Large Marine Ecosystems for very large countries (e.g., USA, Australia)
+#* Tier 3= Marine Ecoregions of the World (Spalding 2007. https://academic.oup.com/bioscience/article-abstract/57/7/573/238419?redirectedFrom=fulltext)
+# * Tier 4= Administrative Boundaries. Usually, this refer to geopolitical boundaries of conties, states or provinces sourced from Open Street Map. In some cases, it can refere to management areas (e.g., Natural Resource Management Regions in Australia)
+
+# To find the Tier ID you are interested on for this report:
+# 1. Go to www.reefcloud.ai/dashboard. 
+# 2. Navegate to the region you are interested on using the map or the search field
+# 3. Extract the last digits from the url. For example, the case below extract the tier 4 (level = 4) from Vietnam, which is 41313
+# https://reefcloud.ai/dashboard/?x=109.08514&y=12.22974&z=9.66468&level=4&id=41313
+
+##Load data
+API <- TRUE
+# countryISO <- "AUS"
+fdir<-"Data/"
+# tierID <- 1808
+
+# Fetch data from API
+
+info <- getRegionalSummary(params$tierID)  #regional summary based on a Spatial Tier ID. 
+sites <- get_sites_info(info) # Extract sites from ReefCloud API
+# params$year<-2025
+info$params$year=params$year
+
+#Create Map
+site_map <- generate_map(data_file = NULL, api = TRUE, sites = NULL, tier_id = params$tierID)
+```
+
+::: {layout="[60, 40]"}
+::: {#first-column}
+![](figures/Region_Map.png){width="100%" height="800" fig-align="left"}
+:::
+
+::: {#second-column}
+# Region: `r info$region_name`
+
+**Country** `r unique(sites$site_country)` **Report Year**: `r params$year`
+:::
+:::
+
+\newpage
+
+# Introduction
+
+This report provides a summary of the results from the monitoring efforts in the region using [ReefCloud](https://reefcloud.ai/dashboard/ "ReefCloud Dashboard"). ReefCloud is an advanced web-based platform designed to facilitate the collection, analysis, and visualization of coral reef monitoring data, by leveraging cutting-edge technology and data integration to more effectively and efficiently monitor and manage reef systems.
+
+Coral reefs are among the most diverse and valuable ecosystems on Earth, providing critical habitat for countless marine species, supporting fisheries, protecting coastlines from erosion, and contributing to local economies through tourism and recreation [@hoegh-guldberg2007]. Despite their importance, coral reefs are facing unprecedented threats from climate change, overfishing, pollution, and other human activities. Recent studies have documented significant declines in coral cover and reef health globally, with some regions experiencing losses of up to 50% in the past few decades [@souter2021; @hughes2017].
+
+Monitoring coral reefs is essential for understanding the extent and drivers of these declines and for informing effective conservation and management actions [@obura2019]. Long-term regular monitoring allows scientists to detect changes in reef condition, identify areas of resilience, and evaluate the effectiveness of conservation interventions [@mcclanahan2011; @hughes2017a]. However, traditional monitoring methods can be labor-intensive, time-consuming, and costly, limiting their scalability and frequency.
+
+ReefCloud addresses these challenges by providing a user-friendly platform that streamlines the process of data collection, analysis, and reporting. The platform integrates data from various sources, including underwater photographs, satellite imagery, and environmental sensors, to provide a comprehensive view of reef health. Advanced analytical tools and machine learning algorithms enable the rapid processing and interpretation of large datasets, making it easier for researchers to track changes over time and identify emerging threats.
+
+ReefCloud also fosters collaboration and data sharing among researchers, conservation practitioners, and policymakers. By providing a centralized repository for reef monitoring data, the platform promotes transparency and facilitates the dissemination of findings to a broader audience. This collaborative approach enhances the collective understanding of coral reef dynamics and supports the development of coordinated conservation strategies.
+
+In summary, this report leverages the capabilities of ReefCloud to provide an automated assessment of coral reef habitats in the region. The findings presented here will contribute to ongoing efforts to conserve and protect these vital ecosystems for the future.
+
+\pagebreak
+
+# Methodology
+
+## Study Area
+
+The surveyed area, identified within the administrative boundaries of `r info$region_name` in `r unique(sites$site_country)`, encompasses the following details:
+
+-   **Number of Sites**: `r info$site_count`
+-   **Number of Photo Quadrats**: `r info$photo_quadrats`
+-   **Data Contributors**: `r info$data_contributors`
+-   **Source**: `r info$source`
+-   **Report Year**: `r params$year`
+
+The survey sites are distributed across the region (@fig-map), detailed information provided in @tbl-surveyed_sites.
+
+```{r}
+#| label: fig-map
+#| fig-cap: "Map of survey sites in the region."
+#| fig-align: "left"
+#| fig-width: 10
+knitr::include_graphics("figures/Site_Map.png")
+```
+
+## Data Analyses
+
+### Automated Image Analyses
+
+The data in this report summarises integrated and standardized benthic cover from annotated photos from multiple monitoring projects in ReefCloud for the selected region (`r info$region_name`), made publicly available by project administrators from `r info$data_contributors` on ReefCloud.
+
+ReefCloud analyzes monitoring images and automatically extracts benthic cover estimates from 50 points per image using Artificial Intelligence [sensu @gonzález-rivero2020]. Specifically, ReefCloud employs Deep Learning with a Convolutional Neural Network model pre-trained with monitoring data from the Australian Institute of Marine Science. Through Transfer Learning, the pre-trained model is adapted to specific locations and training data through additional human annotations specific to the specified projects, classifying 50 points on each survey image to estimate the percent cover of hard coral and macroalgae, amongst other benthic groups.
+
+### Major Benthic cover
+
+Hard coral cover is a key indicator of reef health, representing the proportion of the reef surface covered by live hard corals (Scleractinia). This measure is widely accepted and used globally to assess the condition of coral reef habitats [@flower2017]. For this report, all data that have been made publicly available from the region on ReefCloud is compiled into a single dataset, including information about the sampling source, depth, location, and number of photos analyzed to produce different benthic cover cateogires. These datasets are analyzed using hierarchical Bayesian statistical models, which predict annual cover and the uncertainty of these estimates. The posterior predictions from the model across the region and for each site are aggregated to median and lower/upper credible intervals within 95% of the distribution quantiles [@gelman2013].
+
+ReefCloud uses a statistical model to generate site-specific cover estimates. The model considers transects per site and categorical depth strata (0-5m and \> 5m depth) as replicates to produce cover estimates per site and year using a Hierarchical Bayesian model (@eq-model).
+
+$$
+\begin{multlined}
+y_{ij} \sim{} \beta_{}Bin(\pi_{ij},n) \\
+log\left(\frac{\pi_{ij}}{1-\pi_{ij}}\right) \sim{} \beta_0  + \beta_1year_2 + \beta_2depth_{ij} + \gamma_{site}
+\\
+\\
+\\Where:
+\\
+\beta_0 \sim{} N (0,1) 
+\\
+\beta_1 \sim{} N (0,1) 
+\\
+\beta_2 \sim{} N (0,1) 
+\\
+\gamma_{site} \sim{} t_{}(3,0,1) 
+\\
+\phi_{} \sim{} \gamma_{}(1,0.1)
+\\
+\end{multlined}
+$$ {#eq-model}
+
+## Environmental Pressures
+
+### Thermal Stress
+
+First observed in the early 1980s, mass coral bleaching has become one of the most visible and damaging impacts of climate change on marine ecosystems [@hoegh-guldberg1999]. When water temperatures exceed the average maximum summer temperature for extended periods, corals can become thermally stressed, leading to coral bleaching and potentially death [@baker2008]. Bleaching occurs when corals lose their symbiotic algae (zooxanthellae), which provide them with energy and their distinctive colors. Severe bleaching can lead to increased disease and mortality in corals [@hoegh-guldberg1999]. Over the past decade, coral bleaching events have become more frequent, extensive, and intense [@hughes2018].
+
+To monitor thermal stress, we use Degree Heating Weeks (DHW), calculated from satellite measurements of Sea Surface Temperature (SST) provided by NOAA Coral Reef Watch [@liu2014], which is amongst the most widely used and longest operating DHW product. DHW indicates the accumulated heat stress over the past 12 weeks (\~3 months) and is a reliable predictor of coral bleaching. The units for DHW are "degree Celsius-weeks," combining the intensity and duration of heat stress. Research shows that when DHW reaches 4 degrees C-weeks or higher, widespread bleaching is often observed and at DHW levels above 8, significant coral mortality is typically evidenced [@liu2014].
+
+DHW is calculated by accumulating temperature readings that are more than one degree Celsius above the historical maximum monthly mean temperature for a given location. For example, if the temperature is 2°C above the summer maximum monthly mean for 4 weeks, the DHW value is 8 DHW (2°C x 4 weeks). The thermal stress is accumulated over a 12-week sliding window [@eakin2010a].
+
+On ReefCloud, the DHW values from NOAA's Coral Reef Watch products provides insights into thermal stress exposure for the reported region. ReefCloud uses NOAA's Annual Maximum Monthly Degree Heating Week, measured by daily global 5km satellite estimations of SST [@noaacor2025]. Values are derived using the Version 3.1 daily global 5Km CoralTemp satellite SST data product [@noaacor2025].
+
+The proportions of reef exposed to moderate (4-8 DHW) and severe (\>8 DHW) levels of thermal stress are calculated from a combination of NOAA Coral Reef Watch DHW rasters with spatial information on the distribution of coral reefs in this region from the Allen Coral Atlas and the Global Distribution of Coral Reefs (WCWC-008) datasets. The thermal stress data layer is updated annually in ReefCloud as the data becomes available on the NOAA Coral Reef Watch data server.
+
+### Tropical Cyclones
+
+A tropical cyclone is a rapidly rotating storm system with low atmospheric pressure at its calm center, inward spiraling rainbands, and strong winds that form in areas of sufficiently warm sea surface temperature in the world's tropical regions. If sufficiently long-lasting, the extreme winds generated by these storms can build powerful waves which can severely damage coral reefs and shorelines [@massel1993].
+
+To predict where major damage would be done to reefs, we model where extreme waves could form during a given cyclone. The area within which the average height of the top one-third of the waves likely meets or exceeds 4 meters Hs (significant wave height) is thus defined as the 4MW damage zone [@puotinen2016]. Field data from 8 past cyclones in the Great Barrier Reef and Western Australia has shown such zones perform well at capturing severe damage - noting that because reef vulnerability is highly variable at \<1 km scales, some parts of the reefs within the damage zone will not be damaged. Mapping the 4MW cyclone damage zone helps to explain where acute changes to the reef may occur and can help to explain the changes in reef through longer term monitoring efforts.
+
+On ReefCloud, data for tropical cyclones are sourced from various databases to ensure the best insights on the estimated damage zone from tropical cyclones in a given region. For cyclones within the Australian Exclusive Economic Zone, ReefCloud sources data provided by the [Australian Bureau of Meteorology's cyclone database](http://www.bom.gov.au/cyclone/tropical-cyclone-knowledge-centre/databases/). For other regions outside Australia, ReefCloud uses data sourced from the [International Best Track Archive for Climate Stewardship](https://www.ncdc.noaa.gov/ibtracs/). Modeling this 4MW using the data allows for the reconstruction of the spatial distribution of wind speeds around the cyclone eye every hour along its track. The model then summarizes the data by recording the number of hours for which such conditions persisted and categorises them into moderate (\<5 hrs), high (5 -10 hrs) or extreme (\>10 hrs) to estimate damage done to coral reefs.
+
+\pagebreak
+
+# Results
+
+## Status of coral reef habitats in `r info$region_name`
+
+```{r, echo=FALSE, out.width="100%"}
+#| label: fig-waffle
+#| fig-cap: "Proportion of monitored reef sites within the region withing condition classifications based on coral cover range: A = >50% cover, B = 30-50% cover, C = 10-30% cover, D= <10 % cover."
+#| fig-align: "center"
+cover_type="HARD CORAL"
+xdf<- get_site_cover_cat(tier_id=params$tierID, cover_type=cover_type) %>%
+        mutate(Proportion = Site_No / sum(Site_No),
+           Proportion = round(Proportion * 100, 0))
+H.Class<-xdf$Class[which(xdf$Proportion==max(xdf$Proportion))]
+H.Proportion<-xdf$Proportion[which(xdf$Proportion==max(xdf$Proportion))]
+
+p<-generate_waffle_plots(params$tierID, info, cover_type)
+knitr::include_graphics(paste0('figures/', "SiteCondition_",cover_type, '.png'))
+```
+
+#### Summary:
+
+1.  In `r params$year`, of the total `r info$site_count` monitored reef sites for `r str_to_title(cover_type)`, most sites (`r H.Proportion`%) were within category `r H.Class` (`r xdf$Range[xdf$Class==H.Class]`) (@fig-waffle).
+
+```{r, echo=FALSE, out.width="100%"}
+#| label: fig-waffle2
+#| fig-cap: "Proportion of monitored reef sites within the region within condition classifications based on macroalgae cover range: D = >50% cover, C = 30-50% cover, B = 10-30% cover, A= <10 % cover."
+#| fig-align: "center"
+cover_type="MACROALGAE"
+xdf<- get_site_cover_cat2(tier_id=params$tierID, cover_type=cover_type) %>%
+        mutate(Proportion = Site_No / sum(Site_No),
+           Proportion = round(Proportion * 100, 0))
+M.Class<-xdf$Class[which(xdf$Proportion==max(xdf$Proportion))]
+M.Proportion<-xdf$Proportion[which(xdf$Proportion==max(xdf$Proportion))]
+
+p<-generate_waffle_plots2(params$tierID, info, cover_type)
+knitr::include_graphics(paste0('figures/', "SiteCondition_",cover_type, '.png'))
+```
+
+#### Summary:
+
+1.  In `r params$year`, of the total `r info$site_count` monitored reef sites for `r str_to_title(cover_type)`, most sites (`r M.Proportion`%) were within category `r M.Class` (`r xdf$Range[xdf$Class==M.Class]`) (@fig-waffle2).
+
+\pagebreak
+
+## Recent Environmental Disturbances
+
+```{r, echo=FALSE, out.width="100%"}
+#| label: fig-env_dist
+#| fig-cap: "Proportion of reef area within the region affected by environmental pressures during the reporting year"
+#| fig-align: "center"
+
+dist<-generate_donut_chart(params$tierID, params$year, info)
+knitr::include_graphics("figures/Disturbance_impact.png")
+
+DHW.dist <- dist[[1]] 
+DHW.maxcat <- DHW.dist$Stress_Cat[DHW.dist$severity==max(DHW.dist$severity)]
+DHW.prop <- DHW.dist$percentage_total_reef[DHW.dist$severity==max(DHW.dist$severity)]*100
+DHW.totalprop <- sum(DHW.dist |>  filter(severity > 0) |> select(percentage_total_reef))*100
+TC.dist <- dist[[2]]
+TC.maxcat <- TC.dist$Stress_Cat[TC.dist$severity==max(TC.dist$severity)]
+TC.prop <- TC.dist$percentage_total_reef[TC.dist$severity==max(TC.dist$severity)]*100
+TC.totalprop <- sum(TC.dist |>  filter(severity > 0) |> select(percentage_total_reef))*100
+```
+
+#### Summary:
+
+1.  In `r params$year`, `r DHW.prop`% of reefs experienced `r DHW.maxcat` Thermal Stress with `r DHW.totalprop`% of reefs affected by some level of thermal stress.
+2.  In `r params$year`, `r TC.prop`% of reefs experienced `r TC.maxcat` Cyclone Damage with `r TC.totalprop`% of reefs affected by some level of tropical cyclones.
+
+\pagebreak
+
+## Temporal trends
+
+```{r,echo=FALSE, out.width="100%"}
+#| label: fig-temp_trend
+#| fig-cap: "Temporal trends on hard coral cover for the studied region"
+#| fig-align: "center"
+
+tcover<-temporal_cover_plot(params$tierID, info)
+hc.c<-tcover%>% filter(type=="HARD CORAL", year(date)==params$year)
+hc.l<-tcover%>% filter(type=="HARD CORAL", date==min(date))%>%mutate(year=year(date))
+hc.h<-tcover%>% filter(type=="HARD CORAL", date==max(date))%>%mutate(year=year(date))
+
+knitr::include_graphics("figures/temporal_HardCoral_cover.png")
+```
+
+#### Summary:
+
+1.  by `r params$year`, the Hard Coral cover in `r info$region_name` was estimated to be `r round(hc.c$median,0)` %, varying across the region between `r round(hc.c$low,0)` and `r round(hc.c$high,0)`.
+2.  Compared to the earliest monitoring record for this region in ReefCloud, hard coral cover has changed from `r round(hc.l$median,0)` in `r hc.l$year` to `r round(hc.h$median,0)` in `r hc.h$year`.
+3.  Over the reported period (`r hc.l$year` to `r hc.h$year`), XX severe environmental disturbances affected the region. XX Tropical Cyclones and XX Marine Heatwaves impacted coral reefs in `r info$region_name`.
+
+\pagebreak
+
+# Interpretation Notes
+
+\pagebreak
+
+# References
+
+::: {#refs}
+:::
+
+\pagebreak
+
+# Suppementary Materials
+
+## Site description
+
+```{r, echo=FALSE, out.width="100%"}
+#| label: tbl-surveyed_sites
+#| tbl-cap: "Monitoring site information"
+#| warning: false
+#| echo: false 
+
+
+library(knitr)
+sites.df <- sites %>% bind_cols(st_coordinates(sites)) %>% st_drop_geometry() %>% 
+  select(c(site_name, X, Y, image_count)) %>% 
+  rename(Name = site_name, Images = image_count, Latitude =Y, Longitude= X,) %>%
+  mutate(Name=str_replace_all(Name, pattern="[.]", " "))
+kable(sites.df, align="l")
+```

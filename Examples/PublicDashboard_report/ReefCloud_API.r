@@ -42,6 +42,79 @@ boundary<-st_read(url)
 return(boundary)
 }
 
+## Get Tiers summary
+getTierSummary <- function(bbox) {
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers?tier_level=%s&xmin=%s&ymin=%s&xmax=%s&ymax=%s", 
+                 tier_level = 4,
+                 bbox$xmin, 
+                 bbox$ymin,
+                 bbox$xmax, 
+                 bbox$ymax)
+  region_summary <- st_read(url) |> 
+    as.tibble() |> 
+    select(-geometry)
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers?tier_level=%s&xmin=%s&ymin=%s&xmax=%s&ymax=%s", 
+                 tier_level = 2,
+                 bbox$xmin, 
+                 bbox$ymin,
+                 bbox$xmax, 
+                 bbox$ymax)
+  country_summary <- st_read(url) |> 
+    as.tibble() |> 
+    select(-geometry)
+  tier_summary <- rbind(country_summary, region_summary)
+  return(tier_summary)
+}
+
+## Get Cluster summary
+getClusterSummary <- function(bbox) {
+url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/clusters?tier_level=%s&xmin=%s&ymin=%s&xmax=%s&ymax=%s",
+               tier_level = 4,
+               bbox$xmin, 
+               bbox$ymin,
+               bbox$xmax, 
+               bbox$ymax)
+response <- GET(url)
+data <- fromJSON(content(response, "text", encoding="UTF-8"))
+cluster_summary <- as.data.frame(data$features$properties) |> 
+  select(id, 
+         site_ids, 
+         tier_name, 
+         site_count, 
+         image_count,
+         contributors,
+         cluster_latitude,
+         cluster_longitude) |> 
+  rename(tier_id = id,
+         tier_latitude = cluster_latitude,
+         tier_longitude = cluster_longitude) |> 
+  mutate(tier_level = c("4"))
+url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/clusters?tier_level=%s&xmin=%s&ymin=%s&xmax=%s&ymax=%s",
+               tier_level = 2,
+               bbox$xmin, 
+               bbox$ymin,
+               bbox$xmax, 
+               bbox$ymax)
+response <- GET(url)
+data <- fromJSON(content(response, "text", encoding="UTF-8"))
+country_summary <- as.data.frame(data$features$properties) |> 
+  select(id, 
+         site_ids, 
+         tier_name, 
+         site_count, 
+         image_count,
+         contributors,
+         cluster_latitude,
+         cluster_longitude) |> 
+  rename(tier_id = id,
+         tier_latitude = cluster_latitude,
+         tier_longitude = cluster_longitude) |> 
+  mutate(tier_level = c("2"))
+summary <- country_summary |> 
+  rbind(cluster_summary)
+return(summary)
+}
+
 #Get Regional Cover trend
 get_region_covers <- function(tier_id) {
   url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/surveys/%s", tier_id)
@@ -75,10 +148,10 @@ get_sites_info <- function(info) {
     }
   sites <- st_as_sf(sites, coords = c("site_longitude", "site_latitude"), crs = 4326)
   # Return a spatial dataframe containing the longitude and latitude of the sites
-  sites
+  return(sites)
 }
 
-##Get reef condition
+##Get reef condition (General codes for any cover type)
 get_site_cover_cat <- function(tier_id, cover_type) {
   cover_type<-str_replace_all(cover_type, " ", "%20")
   url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
@@ -87,7 +160,7 @@ get_site_cover_cat <- function(tier_id, cover_type) {
   data <- fromJSON(content(response, "text"))
 
   last_year_pos<-which(data$year==max(data$year))
-  df<-data.frame(Class=c("D","B", "C", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+  df<-data.frame(Class=c("D", "C", "B", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
   mutate(Year=data$year[[last_year_pos]])%>%
   group_by(Year, Class)%>%
   summarise(Site_No=sum(site_num))%>%
@@ -96,7 +169,50 @@ get_site_cover_cat <- function(tier_id, cover_type) {
   Class =="B" ~ "30 - 50 %",
   .default= ">50%"
    ))
+ # Return a dataframe containing number of sites at each cover category
+  return(df)
+}
 
+##Get reef condition (HC, coded for categories)
+get_site_cover_cat_hc <- function(tier_id, cover_type) {
+  cover_type <- str_replace_all(cover_type, " ", "%20")
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
+                 tier_id, cover_type)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text"))
+  last_year_pos<-which(data$year==max(data$year))
+  df<-data.frame(Class=c("D", "C", "B", "A", "A"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+    mutate(Year=data$year[[last_year_pos]])%>%
+    group_by(Year, Class)%>%
+    summarise(Site_No=sum(site_num))%>%
+    mutate(Range = case_when(Class =="D" ~ "D (0 - 10%)",
+                            Class =="C" ~ "C (10 - 30%)",
+                            Class =="B" ~ "B (30 - 50%)",
+                            .default= "A (> 50%)"
+    ))
+  # Return a dataframe containing number of sites at each cover category
+  return(df)
+}
+
+##Get reef condition (MA, coded for categories)
+get_site_cover_cat_ma <- function(tier_id, cover_type) {
+  cover_type <- str_replace_all(cover_type, " ", "%20")
+  url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/temporal-distribution/%s?benthic_type=%s", 
+                 tier_id, cover_type)
+  response <- GET(url)
+  data <- fromJSON(content(response, "text"))
+  
+  last_year_pos<-which(data$year==max(data$year))
+  df<-data.frame(Class=c("A", "B", "C", "D", "D"),  site_num=data$values[[last_year_pos]] %>% pull(magnitude)) %>%
+    mutate(Year=data$year[[last_year_pos]])%>%
+    group_by(Year, Class)%>%
+    summarise(Site_No=sum(site_num))%>%
+    mutate(Range = case_when(Class =="D" ~ "D (> 50%)",
+                             Class =="C" ~ "C (30 - 50%)",
+                             Class =="B" ~ "B (10 - 30%)",
+                             .default= "A (< 10%)"
+    ))
+  # Return a dataframe containing number of sites at each cover category (reversed from HC)
   return(df)
 }
 
@@ -109,6 +225,7 @@ get_disturbance_ext <- function(tier_id, e_type) {
   data <- fromJSON(content(response, "text", encoding="UTF-8"))
   data<-data$data %>%
     mutate(Year=year(start_date))
+  # Return a dataframe containing thermal and storm exposure stress categories
   return(data)
 }
 
