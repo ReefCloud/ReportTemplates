@@ -32,6 +32,7 @@
 #' # Multiple tiers
 #' surveys_multi <- get_benthic_cover(c("tierID1", "tierID2"))
 #' print(surveys_multi)
+#' 
 #' @export
 
 get_benthic_cover <- function(tier_ids) {

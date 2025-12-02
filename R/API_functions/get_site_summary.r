@@ -23,6 +23,9 @@
 #' # Example usage:
 #' sites_sf <- get_site_summary("exampleTierID")
 #' print(sites_sf)
+#' 
+#' @export
+
 
 get_site_summary <- function(tier_id) {
   require(httr)

@@ -29,6 +29,9 @@
 #' # Example usage:
 #' summary <- get_regional_summary("exampleTierID")
 #' print(summary)
+#' 
+#' @export
+
 
 get_regional_summary <- function(tier_id){
 	require(httr)

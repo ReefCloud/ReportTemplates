@@ -24,6 +24,9 @@
 #' # Example usage:
 #' disturbances <- get_disturbance("your_tier_id", "thermal_stress")
 #' head(disturbances)
+#' 
+#' @export
+
 
 get_disturbance <- function(tier_id, e_type) {
   require(httr)

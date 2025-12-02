@@ -26,7 +26,7 @@
 #' tiers_sf <- get_tier_id(tier_level = 4, bbox = bbox)
 #' print(tiers_sf)
 #' }
-
+#'
 #' @export
 
 get_tier_id <- function(tier_level = 4, bbox) {

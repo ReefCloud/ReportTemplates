@@ -13,6 +13,18 @@
 #' @param bbox A bounding box object (`sf::bbox`), named vector, or list.
 #'
 #' @return TRUE if valid, otherwise throws an error.
+#' 
+#' @examples
+#' # Example 1: Valid bbox
+#' valid_bbox <- c(xmin = 142.0, ymin = -10.0, xmax = 145.0, ymax = -8.0)
+#' validate_bbox(valid_bbox)  # Returns TRUE
+#'
+#' # Example 2: Invalid bbox
+#' invalid_bbox <- c(xmin = 145.0, ymin = -10.0, xmax = 142.0, ymax = -8.0)
+#' \dontrun{
+#' validate_bbox(invalid_bbox)  # Throws an error
+#' }
+#' 
 #' @export
 
 validate_bbox <- function(bbox) {
