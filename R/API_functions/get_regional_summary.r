@@ -1,7 +1,6 @@
-
 # =============================================================
-# File: API_get_region_info.r
-# Description: Retrieves a summary of the metadata from a region (tier) using the ReefCloud API.
+# File: get_regional_summary.r
+# Description: Retrieves summary metadata from the ReefCloud API for a region using the Tier ID
 # Author: Manuel Gonzalez-Rivero
 # Date: 2025-11-13
 # Dependencies: httr, jsonlite
@@ -12,7 +11,7 @@
 #' Retrieves a summary of regional data for a specified tier ID from the ReefCloud API.
 #' Returns a list with region name, site count, photo quadrats, data contributors, site ID, and data source.
 #'
-#' @param tierID Character. The unique identifier for the region/tier to query.
+#' @param tier_id Character. The unique identifier for the region/tier to query.
 #'
 #' @return A list containing:
 #'   \item{region_name}{The name of the region.}
@@ -28,15 +27,15 @@
 #'
 #' @examples
 #' # Example usage:
-#' summary <- getRegionalSummary("exampleTierID")
+#' summary <- get_regional_summary("exampleTierID")
 #' print(summary)
 
-getRegionalSummary <- function(tierID){
+get_regional_summary <- function(tier_id){
 	require(httr)
 	require(jsonlite)
-	url <- paste0("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers/", tierID)
-	response <- GET(url)
-	data <- fromJSON(content(response, "text", encoding="UTF-8"))
+	url <- paste0("https://api.reefcloud.ai/reefcloud/dashboard-api/tiers/", tier_id)
+	response <- httr::GET(url)
+	data <- jsonlite::fromJSON(content(response, "text", encoding="UTF-8"))
 	info <- list(
 		region_name = data$data$name,
 		site_count = data$data$site_count,
