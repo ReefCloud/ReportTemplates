@@ -24,6 +24,8 @@
 #'
 #' @export
 
+# intent is to build two half donuts, but currently not working as intended
+
 plot_half_donut <- function(tier_id, cover_type = "HARD CORAL", side = "left") {
   
   source("R/API_functions/get_benthic_cover.r")
@@ -51,6 +53,9 @@ plot_half_donut <- function(tier_id, cover_type = "HARD CORAL", side = "left") {
   } else {
     c("A" = "#00734D", "B" = "#F0C918", "C" = "#F47721", "D" = "#ED1C24") # fallback
   }
+  
+  
+  start_angle <- if (side == "left") pi else 0
   
   p <- ggplot(xdf_sum, aes(x = 2, y = Site_No, fill = cover_prop)) +
     geom_bar(stat = "identity", width = 1, color = "white") +

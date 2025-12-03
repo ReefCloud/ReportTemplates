@@ -5,7 +5,7 @@
 # Date: 2025-11-27
 # Dependencies: ggplot2, dplyr, stringr, patchwork
 # =============================================================
-# 
+
 #' Combine Two Half Donut Plots
 #'
 #' This function generates two half-donut plots (left and right) for different cover types
