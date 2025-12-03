@@ -1,2 +1,2 @@
 # ReportTemplates
-A collection of markdown templates using Quarto to facilitate the production of reports from monitoring using ReefClud data.
+A collection of functions to call upon the ReefCloud API to access the ReefCloud Public Dashboard data (https://reefcloud.ai/dashboard/) for generating reporting templates.
