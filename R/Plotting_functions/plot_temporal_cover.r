@@ -1,6 +1,5 @@
-# Function to generate temporal cover plot
 # =============================================================
-# File: temporal_cover_plot.R
+# File: plot_temporal_cover.R
 # Description: Generates and saves a plot of percent cover trends for a specified region and functional group, using data extracted from the ReefCloud Public Dashboard.
 # Author: Manuel Gonzalez-Rivero
 # Date: 2025-11-13
@@ -13,7 +12,6 @@
 #' including disturbance events (thermal stress and storms) and contributor credits. The plot is saved as a PNG file.
 #'
 #' @param tier_id Character. Unique identifier for the region/tier to plot.
-#' @param info List. Contains metadata, including data contributors (info$data_contributors).
 #'
 #' @return Data frame of modelled cover data for the specified region.
 #'
@@ -24,10 +22,9 @@
 #'
 #' @examples
 #' # Example usage:
-#' info <- list(data_contributors = c("Contributor1", "Contributor2"))
-#' temporal_cover_plot("your_tier_id", info)
+#' plot_temporal_cover("your_tier_id")
 
-temporal_cover_plot <- function(tier_id, taxa = "HARD CORAL") {
+plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
   require(ggimage)
   require(ggplot2)
   require(tidyverse)
@@ -35,24 +32,24 @@ temporal_cover_plot <- function(tier_id, taxa = "HARD CORAL") {
   require(hrbrthemes)
 
   # Load dependent functions
-  source("R/API_functions/API_get_modelled_cover.r")
-  source("R/API_functions/API_get_disturbances.r")
-  source("R/API_functions/API_get_region_info.r")
-  source("R/Plotting_functions/Integer_breaks_plot.r")
+  source("R/API_functions/get_regional_summary.r")
+  source("R/API_functions/get_benthic_cover.r")
+  source("R/API_functions/get_disturbance.r")
+  source("R/Plotting_functions/integer_breaks_helper.r")
 
   # Get info and modeled cover over time for this tier_id
-  s.df <- get_region_covers(tier_id)
-  info <- getRegionalSummary(tier_id)
-
+  info <- get_regional_summary(tier_id)
+  s.df <- get_benthic_cover(tier_id)
+  
   # Get disturbances for this tier id
 
-  events <- get_disturbance_ext(tier_id, e_type = "thermal_stress") |>
+  events <- get_disturbance(tier_id, e_type = "thermal_stress") |>
     filter(severity > 1, percentage_total_reef > 0.05) |>
     mutate(Dist = "DHW", Year = Year - 0.5, icon = "_media/icons/bleaching.png") |>
     select(Year, Dist, icon) |>
     distinct() |>
     bind_rows(
-      get_disturbance_ext(tier_id, e_type = "storm_exposure_year") |>
+      get_disturbance(tier_id, e_type = "storm_exposure_year") |>
         select(Year, severity, percentage_total_reef) |>
         filter(severity > 1, percentage_total_reef > 0.05) |>
         mutate(Dist = "TC", Year = Year - 0.5, icon = "_media/icons/cyclone.png") |>

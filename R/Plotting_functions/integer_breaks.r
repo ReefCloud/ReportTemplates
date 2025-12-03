@@ -1,12 +1,12 @@
 # =============================================================
-# File: integer_breaks.R
+# File: integer_breaks_helper.R
 # Description: Helper function to generate integer axis breaks for ggplot2 plots.
-# Author: [Your Name]
+# Author: Manuel Gonzalez-Rivero
 # Date: 2025-11-13
 # Dependencies: base R
 # =============================================================
 
-#' Generate Integer Breaks for ggplot2 Axis
+#' Generate integer breaks for ggplot2 Axis
 #'
 #' This helper function returns a function that generates integer breaks for ggplot2 axes using `pretty()` and `floor()`.
 #'
@@ -17,6 +17,8 @@
 #'
 #' @examples
 #' scale_x_continuous(breaks = integer_breaks())
+#' 
+#' @export
 
 integer_breaks <- function(n = 5, ...) {
 	fxn <- function(x) {
