@@ -39,7 +39,7 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
 
   # Get info and modeled cover over time for this tier_id
   info <- get_regional_summary(tier_id)
-  s.df <- get_benthic_cover(tier_id)
+  xdf <- get_benthic_cover(tier_id)
   
   # Get disturbances for this tier id
 
@@ -56,9 +56,9 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
         select(Year, Dist, icon) |>
         distinct()
     ) |>
-    filter(Year >= min(year(s.df$date)))
+    filter(Year >= min(year(xdf$date)))
 
-  plot <- s.df |>
+  plot <- xdf |>
     filter(type == taxa) |>
     mutate(year = year(date)) |>
     ggplot() +
@@ -66,11 +66,11 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
       geom_line(aes(x = year, y = median), size = 1.5) +
       geom_image(
         data = events,
-        mapping = aes(x = Year, y = max(s.df$high[s.df$type == taxa]) - max(s.df$high[s.df$type == taxa]) / 20, image = "_media/icons/down_arrow.png")
+        mapping = aes(x = Year, y = max(xdf$high[xdf$type == taxa]) - max(xdf$high[xdf$type == taxa]) / 20, image = "_media/icons/down_arrow.png")
       ) +
       geom_image(
         data = events,
-        mapping = aes(x = Year, y = max(s.df$high[s.df$type == taxa]), image = icon),
+        mapping = aes(x = Year, y = max(xdf$high[xdf$type == taxa]), image = icon),
         position = position_dodge(width = 1)
       ) +
       labs(
@@ -107,5 +107,5 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
     filename = "figures/temporal_HardCoral_cover.png",
     bg = "transparent", width = 8, height = 7
   )
-  return(s.df)
+  return(xdf)
 }

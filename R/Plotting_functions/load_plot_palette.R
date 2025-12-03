@@ -13,13 +13,13 @@
 #'
 #' @format Two named character vectors:
 #' \describe{
-#'   \item{hc.pal}{A palette for hard coral cover categories, using a pink-purple gradient.}
+#'   \item{hc.pal}{A palette for hard coral cover categories, using a pink gradient.}
 #'   \item{ma.pal}{A palette for macroalgae cover categories, using a green gradient.}   
 #'   \item{sc.pal}{A palette for soft coral cover categories, using a purple gradient.}
 #' }
 #'
 #' @details
-#' Both palettes map the following domain values to colors:
+#' All palettes map the following domain values to colors:
 #' \itemize{
 #'   \item `"50 - 100%"` (darkest color)
 #'   \item `"30 - 50%"`

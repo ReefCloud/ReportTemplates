@@ -12,7 +12,7 @@
 #' This function adds two new columns to a benthic cover data frame:
 #' \itemize{
 #'   \item \code{cover_prop}: Factor representing cover ranges with levels:
-#'     \item "> 50%", "30 - 50%", "10 - 30%", "0 - 10%"
+#'     \item "50 - 100%", "30 - 50%", "10 - 30%", "0 - 10%"
 #'   \item \code{cover_cat}: Factor representing category labels with levels:
 #'     \item "A", "B", "C", "D"
 #' }
@@ -34,13 +34,13 @@ add_cover_categories <- function(df, column = "median") {
     stop(sprintf("Column '%s' not found in data frame.", column))
   }
   
-  df %>%
+  df |> 
     dplyr::mutate(
       cover_prop = dplyr::case_when(
         .data[[column]] < 10 ~ "0 - 10%",
         .data[[column]] >= 10 & .data[[column]] < 30 ~ "10 - 30%",
         .data[[column]] >= 30 & .data[[column]] < 50 ~ "30 - 50%",
-        .data[[column]] >= 50 ~ "> 50%"
+        .data[[column]] >= 50 ~ "50 - 100%"
       ),
       cover_cat = dplyr::case_when(
         .data[[column]] < 10 ~ "D",
@@ -49,7 +49,7 @@ add_cover_categories <- function(df, column = "median") {
         .data[[column]] >= 50 ~ "A"
       ),
       # Convert to factors with fixed levels
-      cover_prop = factor(cover_prop, levels = c("> 50%", "30 - 50%", "10 - 30%", "0 - 10%"), ordered = TRUE),
+      cover_prop = factor(cover_prop, levels = c("50 - 100%", "30 - 50%", "10 - 30%", "0 - 10%"), ordered = TRUE),
       cover_cat = factor(cover_cat, levels = c("A", "B", "C", "D"), ordered = TRUE)
     )
 }

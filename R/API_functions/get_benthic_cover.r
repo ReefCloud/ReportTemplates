@@ -36,8 +36,6 @@
 #' @export
 
 get_benthic_cover <- function(tier_ids) {
-  # Ensure tier_ids is a character vector
-  tier_ids <- as.character(tier_ids)
   
   all_surveys <- lapply(tier_ids, function(tier_id) {
     url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/surveys/%s", tier_id)
@@ -61,7 +59,8 @@ get_benthic_cover <- function(tier_ids) {
       dplyr::mutate(year = lubridate::year(date),
                     tier_id = tier_id) |>  # Add tier_id for reference
       dplyr::relocate(year, .after = date) |>
-      dplyr::mutate(depth = dplyr::case_when(
+      dplyr::relocate(tier_id, .after = tier_level) |> 
+      dplyr::mutate(depth_cat = dplyr::case_when(
         depth == "deep_gt_5m" ~ "deep",
         depth == "deep_lt_5m" ~ "shallow",
         depth == "no_depth" ~ NA
