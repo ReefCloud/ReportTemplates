@@ -1,6 +1,6 @@
 # =============================================================
 # File: export_cpce_csv.R
-# Description: Retrieves coordinates from CPCe files
+# Description: Exports data from CPCe (.cpc) files into csv
 # Author: Samuel Chan
 # Date: 2026-01-12
 # Dependencies: readr, stringr, purrr, tibble
@@ -9,8 +9,8 @@
 #' Export CPCe points into a CSV in the same folder
 #'
 #' @description
-#' Scans the provided directory (non-recursive) for `.cpc` files, parses each using
-#' [read_cpce()], row-binds results, and writes a CSV *into the same folder*.
+#' Scans the provided directory  for `.cpc` files, parses each using [read_cpce()], 
+#' row-binds results, and writes a CSV *into the same folder*.
 #' The CSV filename encodes the **last four folder levels** of the provided path.
 #'
 #' @param dir Character scalar. Directory to search for `.cpc` files.
@@ -33,7 +33,7 @@
 #' }
 #' @seealso [read_cpce()]
 #' @export
-<- function(dir,
+export_cpce_csv <- function(dir,
             scale_factor = 15,
             round_to_pixel = TRUE,
             fail_on_error = TRUE,

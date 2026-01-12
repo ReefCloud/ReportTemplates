@@ -1,6 +1,6 @@
 # =============================================================
 # File: read_cpce.R
-# Description: Retrieves coordinates from CPCe (.cpc) files
+# Description: Retrieves data from CPCe (.cpc) files
 # Author: Samuel Chan
 # Date: 2026-01-12
 # Dependencies: readr, stringr, purrr, tibble
