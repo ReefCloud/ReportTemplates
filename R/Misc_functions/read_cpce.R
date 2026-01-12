@@ -46,7 +46,7 @@ read_cpce <- function(path,
                       scale_factor = 15,
                       round_to_pixel = TRUE) {
   
-  # ---- validation ----
+  # Validation
   if (!is.character(path) || length(path) != 1L) {
     stop("`path` must be a single character string to a .cpc file.", call. = FALSE)
   }
@@ -84,7 +84,7 @@ read_cpce <- function(path,
     if (is.na(m[1, 2])) NA_character_ else m[1, 2]
   }
   
-  # ---- find numeric lines ----
+  # Find numeric lines
   pairs    <- purrr::map(seq_along(lines), ~ num_pair(lines[.x]))
   pair_idx <- which(!purrr::map_lgl(pairs, is.null))
   if (length(pair_idx) < 6) {
@@ -153,27 +153,17 @@ read_cpce <- function(path,
     message("No per-point labels found in '", base_file, "'. `label_code` is NA.")
   }
   
-  # ---- numeric vectors ----
+  # Get numeric vectors 
   x_cpc <- vapply(coord_pairs, function(v) v[1], numeric(1))
   y_cpc <- vapply(coord_pairs, function(v) v[2], numeric(1))
   
-  # ---- scale factor (default 15; allow 12) ----
+  
+  # If scale_factor is NA, default to 15; else enforce 12 or 15
   if (is.na(scale_factor)) {
-    # Optional heuristic; remove if you prefer strict 12/15 only.
-    m <- stringr::str_match_all(lines[1], "(\\d+)")
-    nums <- suppressWarnings(as.numeric(unlist(m)))
-    if (length(nums) >= 2) {
-      plausible <- function(f) {
-        q <- nums[1:2] / f
-        all(q > 300 & q < 20000 & abs(q - round(q)) < 1e-6)
-      }
-      scale_factor <- if (plausible(15)) 15 else if (plausible(12)) 12 else 15
-    } else {
-      scale_factor <- 15
-    }
+    scale_factor <- 15
   }
-  if (!is.finite(scale_factor) || !scale_factor %in% c(12, 15)) {
-    stop("`scale_factor` must be 12 (legacy) or 15 (default).", call. = FALSE)
+  if (!(scale_factor %in% c(12, 15))) {
+    stop("`scale_factor` must be exactly 12 or 15.", call. = FALSE)
   }
   
   # CPC -> pixel converter (1‑based)

@@ -33,12 +33,17 @@
 #' }
 #' @seealso [read_cpce()]
 #' @export
+
 export_cpce_csv <- function(dir,
             scale_factor = 15,
             round_to_pixel = TRUE,
             fail_on_error = TRUE,
             overwrite = TRUE) {
-  # ---- validation ----
+  
+  # Source read cpce function
+  source("R/Misc_functions/read_cpce.r")
+    
+  # Validation 
   if (!is.character(dir) || length(dir) != 1L) {
     stop("`dir` must be a single character directory path.", call. = FALSE)
   }
@@ -56,7 +61,7 @@ export_cpce_csv <- function(dir,
     stop("`overwrite` must be a single logical value.", call. = FALSE)
   }
   
-  # ---- derive "last 4 levels" name ----
+  # Derive names
   # Normalize to forward slashes, split into components
   norm <- gsub("\\\\", "/", dir)
   parts <- strsplit(norm, "/", fixed = TRUE)[[1]]
@@ -72,7 +77,7 @@ export_cpce_csv <- function(dir,
   if (nchar(suffix) > 180) suffix <- paste0(substr(suffix, 1, 180), "_trim")
   out_csv <- file.path(dir, paste0("cpce_points_", suffix, ".csv"))
   
-  # ---- discover files in the folder (non-recursive) ----
+  # Check for files in folder
   files <- list.files(
     path = dir,
     pattern = "\\.cpc$",
@@ -84,7 +89,7 @@ export_cpce_csv <- function(dir,
     stop("No `.cpc` files found in: ", dir, call. = FALSE)
   }
   
-  # ---- parse each file ----
+  # Parse each file
   parse_one <- function(fp) {
     read_cpce(fp,
               scale_factor = scale_factor,
@@ -112,7 +117,7 @@ export_cpce_csv <- function(dir,
   
   combined <- dplyr::bind_rows(dfl)
   
-  # ---- write CSV ----
+  # Write CSV
   if (file.exists(out_csv) && !overwrite) {
     stop("Output file already exists and `overwrite = FALSE`: ", out_csv, call. = FALSE)
   }
