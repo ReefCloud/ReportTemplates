@@ -30,7 +30,7 @@
 #' @export
 
 get_tier_id <- function(tier_level = 4, bbox) {
-
+  
   # Validate bbox using helper
   source("R/API_functions/validate_bbox.r")
   validate_bbox(bbox)

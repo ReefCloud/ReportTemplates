@@ -32,7 +32,6 @@
 #' 
 #' @export
 
-
 get_regional_summary <- function(tier_id){
 	require(httr)
 	require(jsonlite)

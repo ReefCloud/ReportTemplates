@@ -38,6 +38,6 @@ get_disturbance <- function(tier_id, e_type) {
   response <- httr::GET(url)
   data <- jsonlite::fromJSON(content(response, "text", encoding = "UTF-8"))
   data <- data$data %>%
-    mutate(Year = year(start_date))
+    mutate(year = year(start_date))
   return(data)
 }
