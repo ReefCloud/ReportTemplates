@@ -38,7 +38,7 @@ jobs:
           packages: deps::., any::sessioninfo, any::devtools, any::pkgdown
           needs: website
 
-      - name: Build synthos package
+      - name: Build package
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           packages: local::.
