@@ -27,7 +27,6 @@
 #' 
 #' @export
 
-
 get_disturbance <- function(tier_id, e_type) {
   require(httr)
   require(jsonlite)

@@ -1,11 +1,10 @@
-
 # =============================================================
 # File: generate_map.R
 # Description: Generates main, inset, and region maps for a ReefCloud tier (WGS84).
 # Author: Samuel Chan
 # Date: 2026-01-07
 # Dependencies: sf, ggplot2, rnaturalearth, cowplot, ggspatial, basemaps, dplyr
-# Requires: get_regional_summary(), get_sites_summary(), getTiers()
+# Requires: get_regional_summary(), get_site_summary(), getTiers()
 # =============================================================
 
 #' Generate Tier Maps (Main, Inset, Region) in WGS84
@@ -92,13 +91,13 @@ generate_map <- function(
   # Replace `source()` with Imports + namespace in a package.
   source("R/API_functions/get_regional_summary.r")
   source("R/API_functions/get_site_summary.r")         
-  source("R/API_functions/get_tier_id.r")              # Assuming getTiers() lives here
+  source("R/API_functions/get_tier_id.r")
   
   # ---- Fetch data (defensive) ----
   info  <- tryCatch(get_regional_summary(tier_id), error = function(e) NULL)
   sites <- tryCatch(get_site_summary(tier_id),    error = function(e) NULL)
   
-  if (is.null(sites)) stop("Failed to retrieve sites via `get_sites_summary()`.")
+  if (is.null(sites)) stop("Failed to retrieve sites via `get_site_summary()`.")
   if (!inherits(sites, "sf")) stop("`sites` must be an sf object with point geometries.")
   if (nrow(sites) == 0) stop("No site records returned for the specified `tier_id`.")
   
@@ -129,18 +128,21 @@ generate_map <- function(
   })
   
   # ---- Get tier boundary within bbox (largest polygon selection) ----
-  boundary <- tryCatch(get_tier_id(tier_level = boundary_level, bbox = bbox_wgs), error = function(e) NULL)
+  bbox_list <- as.list(bbox_wgs)[c("xmin","ymin","xmax","ymax")]  # FIX: coerce bbox to list for $ access
+  boundary <- tryCatch(
+    get_tier_id(tier_level = boundary_level, bbox = bbox_list),
+    error = function(e) NULL
+  )
   if (is.null(boundary)) stop("Failed to retrieve tier boundary via `get_tier_id()`.")
-  if (!inherits(boundary, "sf")) stop("`boundary` must be an sf object.")
   
   # Ensure WGS84 and polygonal geometry; select largest polygon
   boundary_wgs <- if (sf::st_crs(boundary)$epsg == 4326) boundary else sf::st_transform(boundary, 4326)
-  boundary_wgs <- boundary_wgs |>
-    sf::st_cast("POLYGON", warn = FALSE) |>
-    dplyr::mutate(.area = as.numeric(sf::st_area(boundary_wgs))) |>
-    dplyr::slice_max(order_by = .area, n = 1, with_ties = FALSE) |>
-    dplyr::select(-.area)
   
+  boundary_poly <- sf::st_cast(boundary_wgs, "POLYGON", warn = FALSE)
+  boundary_poly$.area <- as.numeric(sf::st_area(boundary_poly))
+  boundary_wgs <- boundary_poly[which.max(boundary_poly$.area), ] |>
+    dplyr::select(-.area)
+
   # ---- Natural Earth: world and country extent in WGS84 ----
   world_wgs <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
   if (!sf::st_is_longlat(world_wgs)) world_wgs <- sf::st_transform(world_wgs, 4326)
