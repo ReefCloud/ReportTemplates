@@ -40,13 +40,13 @@
 #' @export map_palette_hc
 #' @export map_palette_ma
 
-map_palette_hc <- colorFactor(
+map_palette_hc <- leaflet::colorFactor(
   palette = c("#ae017e", "#f768a1", "#fbb4b9", "#feebe2"),
   domain = c("50 - 100%", "30 - 50%", "10 - 30%", "0 - 10%"),
   reverse = TRUE
 )
 
-map_palette_ma <- colorFactor(
+map_palette_ma <- leaflet::colorFactor(
   palette = c("#238443", "#78c679", "#c2e699", "#ffffcc"),
   domain = c("50 - 100%", "30 - 50%", "10 - 30%", "0 - 10%"),
   reverse = TRUE
