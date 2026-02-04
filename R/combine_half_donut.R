@@ -24,7 +24,7 @@
 
 combine_half_donut <- function(tier_id, left_cover_type = "HARD CORAL", right_cover_type = "MACROALGAE") {
 
-  source("R/Plotting_functions/plot_half_donut.r")
+  source("R/plot_half_donut.R")
   library(patchwork)
   p_left <- plot_half_donut(tier_id, cover_type = left_cover_type, side = "left")
   p_right <- plot_half_donut(tier_id, cover_type = right_cover_type, side = "right")

@@ -32,10 +32,10 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
   require(hrbrthemes)
 
   # Load dependent functions
-  source("R/API_functions/get_regional_summary.r")
-  source("R/API_functions/get_benthic_cover.r")
-  source("R/API_functions/get_disturbance.r")
-  source("R/Plotting_functions/integer_breaks_helper.r")
+  source("R/get_regional_summary.R")
+  source("R/get_benthic_cover.R")
+  source("R/get_disturbance.R")
+  source("R/integer_breaks.R")
 
   # Get info and modeled cover over time for this tier_id
   info <- get_regional_summary(tier_id)

@@ -6,7 +6,6 @@
 # Dependencies: ggplot2, dplyr, stringr
 # =============================================================
 # 
-
 #' Create Site-Level Cover Plot
 #'
 #' This function generates a site-level plot of benthic cover (e.g., hard coral, macroalgae, soft coral)
@@ -35,12 +34,12 @@
 plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", depth = "shallow") {
   
   # Load required functions
-  source("R/API_functions/get_regional_summary.r")
-  source("R/API_functions/get_site_summary.r")
-  source("R/API_functions/get_benthic_cover.r")
-  source("R/API_functions/get_disturbance.r")
-  source("R/Plotting_functions/add_cover_categories.r")
-  source("R/Plotting_functions/integer_breaks.r")
+  source("R/get_regional_summary.R")
+  source("R/get_site_summary.R")
+  source("R/get_benthic_cover.R")
+  source("R/get_disturbance.R")
+  source("R/add_cover_categories.R")
+  source("R/integer_breaks.R")
   
   # Retrieve site summary
   sdf <- get_site_summary(tier_id) |>

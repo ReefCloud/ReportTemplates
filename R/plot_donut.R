@@ -49,10 +49,10 @@ plot_donut <- function(
 ) {
   
   # ---- Load external helper functions and palettes ----
-  source("R/API_functions/get_benthic_cover.r")
-  source("R/API_functions/get_regional_summary.r")
-  source("R/Plotting_functions/add_cover_categories.r")
-  source("R/Plotting_functions/load_plot_palette.r")
+  source("R/get_benthic_cover.R")
+  source("R/get_regional_summary.R")
+  source("R/add_cover_categories.R")
+  source("R/load_plot_palette.R")
   
   # ---- Validate inputs ----
   if (missing(tier_id) || length(tier_id) != 1) {

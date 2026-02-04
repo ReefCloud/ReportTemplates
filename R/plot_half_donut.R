@@ -39,11 +39,10 @@
 #' @importFrom stringr str_replace_all str_to_title
 plot_half_donut <- function(tier_id, cover_type = "HARD CORAL", side = "left") {
   
-  # ---- Load external helper functions and palettes ----
-  source("R/API_functions/get_benthic_cover.r")
-  source("R/API_functions/get_regional_summary.r")
-  source("R/Plotting_functions/add_cover_categories.r")
-  source("R/Plotting_functions/load_plot_palette.r")
+  source("R/get_benthic_cover.R")
+  source("R/get_regional_summary.R")
+  source("R/add_cover_categories.R")
+  source("R/load_plot_palette.R")
   
   # ---- Fetch info for titles/captions ----
   info <- get_regional_summary(tier_id)

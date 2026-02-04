@@ -89,9 +89,9 @@ generate_map <- function(
   
   # ---- Load external helper functions ----
   # Replace `source()` with Imports + namespace in a package.
-  source("R/API_functions/get_regional_summary.r")
-  source("R/API_functions/get_site_summary.r")         
-  source("R/API_functions/get_tier_id.r")
+  source("R/get_regional_summary.R")
+  source("R/get_site_summary.R")         
+  source("R/get_tier_id.R")
   
   # ---- Fetch data (defensive) ----
   info  <- tryCatch(get_regional_summary(tier_id), error = function(e) NULL)

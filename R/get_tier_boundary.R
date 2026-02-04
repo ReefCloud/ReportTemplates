@@ -31,7 +31,7 @@
 get_tiers_frombbox <- function(tier_level = 4, bbox) {
   
   # Validate bbox using helper
-  source("R/API_functions/validate_bbox.r")
+  source("R/validate_bbox.R")
   validate_bbox(bbox)
   
   # Construct URL
