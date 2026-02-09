@@ -24,7 +24,6 @@
 #' bbox <- list(xmin = 142, ymin = -20, xmax = 146, ymax = -18)
 #' tiers_sf <- get_tiers_frombbox(tier_level = 4, bbox = bbox)
 #' print(tiers_sf)
-#' }
 #'
 #' @export
 

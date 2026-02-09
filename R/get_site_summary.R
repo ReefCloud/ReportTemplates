@@ -19,16 +19,14 @@
 #' @export
 
 get_site_summary <- function(tier_id) {
-  # Input validation
-  stopifnot(is.character(tier_id), length(tier_id) == 1, !is.na(tier_id), nzchar(tier_id))
-
   # Get site list for the tier/region
   # Prefer using your package import: get_regional_summary()
   info <- get_regional_summary(tier_id = tier_id)
 
-  if (!"site_id" %in% names(info) || nrow(info) == 0) {
+  if (!"site_id" %in% names(info) || is.null(info$site_id) || length(info$site_id) == 0L) {
     stop("No sites found for the provided tier_id.")
   }
+  
 
   # Helper to safely fetch a single site
   fetch_one <- function(site_id) {

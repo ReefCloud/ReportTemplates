@@ -1,4 +1,3 @@
-
 # =============================================================
 # File: load_plot_palette.R
 # Description: Defines color palettes for benthic cover ranges (hard coral, macroalgae, soft coral)
@@ -82,7 +81,6 @@
 #' @export ma.pal_cat
 #' @export sc.pal_cat
 #' @export palette_for
-NULL
 
 # ---- cover_prop palettes (labels) ----
 hc.pal_prop <- c(

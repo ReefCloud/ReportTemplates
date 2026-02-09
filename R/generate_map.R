@@ -30,12 +30,12 @@
 #' @param out_dir Character. Output directory to save PNGs. Default \code{"figures"}.
 #' @param site_point_size Numeric. Point size for site markers. Default \code{3}.
 #' @param site_point_color Character. Color for site markers. Default \code{"red"}.
-#' @param site_point_alpha Numeric in [0,1]. Alpha for site markers. Default \code{0.5}.
+#' @param site_point_alpha Numeric in \code{0,1}. Alpha for site markers. Default \code{0.5}.
 #' @param boundary_line_color Character. Color for boundary outline. Default \code{"black"}.
 #' @param boundary_line_size Numeric. Line width for boundary outline. Default \code{3}.
 #' @param inset_fill Character. Fill color for country in the inset map. Default \code{"lightblue"}.
 #' @param boundary_fill Character. Fill color for boundary polygon in inset/region maps. Default \code{"red"}.
-#' @param boundary_alpha Numeric in [0,1]. Alpha for boundary fill in inset/region maps. Default \code{0.5}.
+#' @param boundary_alpha Numeric in \code{0,1}. Alpha for boundary fill in inset/region maps. Default \code{0.5}.
 #' @param inset_pos Named list with \code{x, y, width, height} for positioning the inset on the main map.
 #'   Defaults to \code{list(x = 0.88, y = 0.3, width = 0.25, height = 0.25)}.
 #'
