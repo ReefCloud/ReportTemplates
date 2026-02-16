@@ -31,27 +31,30 @@
 #'
 #' @import ggplot2 dplyr forcats stringr sf
 #' @export
+
 plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", depth = "shallow") {
   
   # Load required functions
   source("R/get_regional_summary.R")
   source("R/get_site_summary.R")
   source("R/get_benthic_cover.R")
-  source("R/get_disturbance.R")
   source("R/add_cover_categories.R")
   source("R/integer_breaks.R")
+  source("R/load_plot_palette.R")
+  
+  # Retrieve regional summary
+  info <- get_regional_summary(tier_id)
   
   # Retrieve site summary
   sdf <- get_site_summary(tier_id) |>
-    st_drop_geometry() |>
-    select(-id, -org_id, -org_name)
+    sf::st_drop_geometry()
   
   # Retrieve benthic cover data and join with site summary
   xdf <- get_benthic_cover(sdf$site_id) |>
-    filter(type == !!cover_type) |> 
-    filter(depth_cat == !!depth) |>
-    select(-element_id, -id, -survey_id, -tier_level) |>
-    left_join(sdf, by = c("tier_id" = "site_id")) |>
+    dplyr::filter(type == !!cover_type) |> 
+    dplyr::filter(depth == !!depth) |>
+    dplyr::select(-element_id, -id, -survey_id, -tier_level) |>
+    dplyr::left_join(sdf, by = c("tier_id" = "site_id")) |>
     add_cover_categories()
   
   # Set default year if not provided
@@ -60,37 +63,39 @@ plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", dep
   }
   
   # Filter by year
-  xdf <- xdf |> filter(year == !!year)
+  xdf <- xdf |> dplyr::filter(year == !!year)
   
   # Define palette
   palette <- if (cover_type == "HARD CORAL") {
-    hc.pal
+    hc.pal_prop
   } else if (cover_type == "MACROALGAE") {
-    ma.pal
+    ma.pal_prop
   } else if (cover_type == "SOFT CORAL") {
-    sc.pal
+    sc.pal_prop
   } else {
     c("A" = "#00734D", "B" = "#F0C918", "C" = "#F47721", "D" = "#ED1C24") # fallback
   }
   
   # Generate plot
   plot <- xdf |>
-    mutate(site_name = fct_reorder(site_name, desc(median))) |>
-    ggplot() +
-    geom_pointrange(aes(x = site_name, y = median, ymin = low, ymax = high, col = cover_prop)) +
-    geom_hline(aes(yintercept = 30), col = palette[2], linetype = 2) +
-    scale_color_manual(values = palette) +
-    scale_y_continuous(name = "Cover (%)", limits = c(0, 100)) +
-    scale_x_discrete(name = "Sites") +
-    theme_void() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(
+    dplyr::mutate(site_name = forcats::fct_reorder(site_name, dplyr::desc(median))) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_pointrange(
+      ggplot2::aes(x = site_name, y = median, ymin = low, ymax = high, col = cover_prop)) +
+    ggplot2::geom_hline(
+      ggplot2::aes(yintercept = 30), col = palette[2], linetype = 2) +
+    ggplot2::scale_color_manual(values = palette) +
+    ggplot2::scale_y_continuous(name = "Cover (%)", limits = c(0, 100)) +
+    ggplot2::scale_x_discrete(name = "Sites") +
+    ggplot2::theme_void() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
+    ggplot2::labs(
       title = paste("Coral Reef Habitat Condition", info$region_name, "Region"),
-      subtitle = sprintf("Number of sites by %s cover category", stringr::str_to_title(cover_type))
+      subtitle = sprintf("Sites by descending %s cover category", stringr::str_to_title(cover_type))
     )
   
   # Save plot
-  ggsave(plot,
+  ggplot2::ggsave(plot,
          filename = paste0("figures/", "SiteCover_", stringr::str_replace_all(cover_type, " ", "_"), ".png"),
          bg = "transparent", width = 12, height = 6
   )

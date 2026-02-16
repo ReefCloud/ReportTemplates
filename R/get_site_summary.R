@@ -39,6 +39,9 @@ get_site_summary <- function(tier_id) {
     if (httr::http_error(resp)) {
       # Return a row of NAs but keep id to avoid losing record
       return(dplyr::tibble(
+        site_id        = NA_real_,
+        site_name      = NA_character_,
+        site_country   = NA_character_,
         site_longitude = NA_real_,
         site_latitude  = NA_real_,
         local_region   = NA_character_
@@ -55,6 +58,9 @@ get_site_summary <- function(tier_id) {
     row <- dat$data
     if (is.null(row)) {
       return(dplyr::tibble(
+        site_id        = NA_real_,
+        site_name      = NA_character_,
+        site_country   = NA_character_,
         site_longitude = NA_real_,
         site_latitude  = NA_real_,
         local_region   = NA_character_
@@ -62,11 +68,17 @@ get_site_summary <- function(tier_id) {
     }
 
     # Normalize fields
+    site_id        <- if (is.null(row$site_id)) NA_real_ else as.numeric(row$site_id) 
+    site_name      <- if (is.null(row$site_name)) NA_character_ else as.character(row$site_name)
+    site_country   <- if (is.null(row$site_country)) NA_character_ else as.character(row$site_country)
     site_longitude <- if (is.null(row$site_longitude)) NA_real_ else as.numeric(row$site_longitude)
     site_latitude  <- if (is.null(row$site_latitude))  NA_real_ else as.numeric(row$site_latitude)
     local_region   <- if (is.null(row$local_region))   NA_character_ else as.character(row$local_region)
 
     dplyr::tibble(
+      site_id        = site_id,
+      site_name      = site_name,
+      site_country   = site_country,
       site_longitude = site_longitude,
       site_latitude  = site_latitude,
       local_region   = local_region

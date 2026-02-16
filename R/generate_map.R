@@ -90,9 +90,9 @@ generate_map <- function(
   # ---- Load external helper functions ----
   # Replace `source()` with Imports + namespace in a package.
   source("R/get_regional_summary.R")
-  source("R/get_site_summary.R")         
-  source("R/get_tier_id.R")
-  
+  source("R/get_site_summary.R")
+  source("R/get_tier_boundary.R")
+
   # ---- Fetch data (defensive) ----
   info  <- tryCatch(get_regional_summary(tier_id), error = function(e) NULL)
   sites <- tryCatch(get_site_summary(tier_id),    error = function(e) NULL)
@@ -130,10 +130,10 @@ generate_map <- function(
   # ---- Get tier boundary within bbox (largest polygon selection) ----
   bbox_list <- as.list(bbox_wgs)[c("xmin","ymin","xmax","ymax")]  # FIX: coerce bbox to list for $ access
   boundary <- tryCatch(
-    get_tier_id(tier_level = boundary_level, bbox = bbox_list),
+    get_tier_boundary(tier_level = boundary_level, bbox = bbox_list),
     error = function(e) NULL
   )
-  if (is.null(boundary)) stop("Failed to retrieve tier boundary via `get_tier_id()`.")
+  if (is.null(boundary)) stop("Failed to retrieve tier boundary via `get_tier_boundary()`.")
   
   # Ensure WGS84 and polygonal geometry; select largest polygon
   boundary_wgs <- if (sf::st_crs(boundary)$epsg == 4326) boundary else sf::st_transform(boundary, 4326)

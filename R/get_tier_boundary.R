@@ -27,7 +27,7 @@
 #'
 #' @export
 
-get_tiers_frombbox <- function(tier_level = 4, bbox) {
+get_tier_boundary <- function(tier_level = 4, bbox) {
   
   # Validate bbox using helper
   source("R/validate_bbox.R")

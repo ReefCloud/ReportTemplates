@@ -1,20 +1,9 @@
-
-# =============================================================
-# File: plot_donut_cover.R
-# Description: Builds benthic data from ReefCloud API (regional summary + benthic cover),
-#              defaults to HARD CORAL, classifies into range bins, and plots a whole-donut chart.
-# Author: Samuel Chan
-# Date: 2026-01-07
-# Dependencies: ggplot2, dplyr, tidyr, rlang
-# Requires: get_benthic_cover(), get_regional_summary(), add_cover_categories(), palette_for()
-# =============================================================
-
 #' Plot Donut for Benthic Cover (Defaults to HARD CORAL)
 #'
 #' Retrieves survey compositions via \code{get_benthic_cover()}, filters to a requested
 #' benthic \code{cover_type} (default \code{"HARD CORAL"}), classifies cover into ranges
 #' using \code{add_cover_categories()}, and renders a whole-donut plot. Uses
-#' \code{get_regional_summary()} to add a center label (region name and sites).
+#' \code{get_regional_summary()} to add region/site context for labels.
 #'
 #' @param tier_id Character. ReefCloud tier ID to query.
 #' @param cover_type Character. Benthic group to plot (e.g., \code{"HARD CORAL"}, \code{"MACROALGAE"}, \code{"SOFT CORAL"}).
@@ -24,20 +13,6 @@
 #' @param donut_width Numeric in (0, 1]. Ring thickness (e.g., \code{0.6}). Default \code{0.6}.
 #'
 #' @return A \code{ggplot} donut chart.
-#'
-#' @details
-#' - Detects the benthic group column among \code{c("type", "major_functional_group", "functional_group", "group", "category")}.
-#' - Classifies using the \code{"median"} cover column; adjust if you need \code{"mean"} etc.
-#' - Palette auto-maps from \code{cover_type} to \code{hc/ma/sc} (case-insensitive).
-#' - Factor order follows \code{add_cover_categories()} (descending for clean legends).
-#'
-#' @examples
-#' # Default HARD CORAL donut for a tier:
-#' # p <- plot_donut("exampleTierID")
-#' # print(p)
-#'
-#' # Show labels:
-#' # p <- plot_donut("exampleTierID", cover_type = "MACROALGAE", show_labels = TRUE)
 #'
 #' @export
 plot_donut <- function(
@@ -66,11 +41,13 @@ plot_donut <- function(
     stop("`donut_width` must be a numeric value in (0, 1].")
   }
   
-  # ---- Fetch info for center label ----
+  # ---- Fetch info (region name + site count) ----
   info <- tryCatch(
     get_regional_summary(tier_id),
     error = function(e) NULL
   )
+  region_name <- if (!is.null(info) && is.list(info)) info$region_name else NULL
+  site_count  <- if (!is.null(info) && is.list(info)) info$site_count  else NULL
   
   # ---- Retrieve and filter benthic data for the requested cover type ----
   surveys <- tryCatch(
@@ -102,7 +79,6 @@ plot_donut <- function(
   xdf <- add_cover_categories(xdf, column = "median")  # adds `cover_prop` + `cover_cat`
   
   # ---- Summarise: number of rows per range (proxy for site counts) ----
-  # Use factor levels from add_cover_categories() (descending order)
   range_levels <- levels(xdf$cover_prop)
   if (is.null(range_levels)) {
     range_levels <- c("50 - 100%", "30 - 50%", "10 - 30%", "0 - 10%")
@@ -119,7 +95,6 @@ plot_donut <- function(
     )
   
   # ---- Palette selection based on cover_type ----
-  # Map cover_type to palette group (case-insensitive)
   ct_upper <- toupper(cover_type)
   group_map <- list(
     "HARD CORAL"  = "hc",
@@ -143,11 +118,29 @@ plot_donut <- function(
   # ---- Build whole-donut plot ----
   xdf_sum$x <- 1
   
+  title_txt <- if (!is.null(region_name)) {
+    paste("Coral Reef Site Condition", region_name, "Region")
+  } else {
+    "Coral Reef Site Condition"
+  }
+  
+
+  cover_title <- stringr::str_to_title(cover_type)
+  subtitle_txt <- paste0(
+    "Sites by ", cover_title, " cover category",
+    if (!is.null(site_count)) paste0("n: ", site_count) else ""
+  )
+  
   p <- ggplot2::ggplot(xdf_sum, ggplot2::aes(x = x, y = Site_No, fill = cover_prop)) +
     ggplot2::geom_col(width = donut_width, color = NA) +
     ggplot2::coord_polar(theta = "y") +
-    ggplot2::scale_fill_manual(values = pal, guide = "none") +
-    ggplot2::theme_void()
+    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::theme_void() +
+    ggplot2::theme(legend.position = "bottom", legend.direction = "horizontal") +
+    ggplot2::labs(
+      title = title_txt,
+      subtitle = subtitle_txt
+    )
   
   # Segment labels (optional)
   if (isTRUE(show_labels)) {
@@ -158,27 +151,6 @@ plot_donut <- function(
       size = 4
     )
   }
-  
-  # Center label (region name and sites if available)
-  center_text <- NULL
-  if (!is.null(info) && is.list(info)) {
-    nm <- info$region_name
-    sc <- info$site_count
-    if (!is.null(nm) && !is.null(sc)) {
-      center_text <- paste0(nm, "\nSites: ", sc)
-    } else if (!is.null(nm)) {
-      center_text <- nm
-    }
-  }
-  if (is.null(center_text)) {
-    center_text <- cover_type
-  }
-  
-  p <- p + ggplot2::annotate(
-    "text", x = 0, y = 0,
-    label = center_text,
-    size = 6, fontface = "bold", color = "#333333"
-  )
   
   return(p)
 }
