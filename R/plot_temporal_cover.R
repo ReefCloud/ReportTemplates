@@ -45,32 +45,32 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
 
   events <- get_disturbance(tier_id, e_type = "thermal_stress") |>
     filter(severity > 1, percentage_total_reef > 0.05) |>
-    mutate(Dist = "DHW", Year = Year - 0.5, icon = "_media/icons/bleaching.png") |>
-    select(Year, Dist, icon) |>
+    mutate(dist = "DHW", year = year - 0.5, icon = "_media/icons/bleaching.png") |>
+    select(year, dist, icon) |>
     distinct() |>
     bind_rows(
       get_disturbance(tier_id, e_type = "storm_exposure_year") |>
-        select(Year, severity, percentage_total_reef) |>
+        select(year, severity, percentage_total_reef) |>
         filter(severity > 1, percentage_total_reef > 0.05) |>
-        mutate(Dist = "TC", Year = Year - 0.5, icon = "_media/icons/cyclone.png") |>
-        select(Year, Dist, icon) |>
+        mutate(dist = "TC", year = year - 0.5, icon = "_media/icons/cyclone.png") |>
+        select(year, dist, icon) |>
         distinct()
     ) |>
-    filter(Year >= min(year(xdf$date)))
+    filter(year >= min(year(xdf$date)))
 
   plot <- xdf |>
-    filter(type == taxa) |>
+    filter(type == cover_type) |>
     mutate(year = year(date)) |>
     ggplot() +
       geom_pointrange(aes(x = year, y = median, ymin = low, ymax = high), size = 2, color = "black", linetype = "dashed") +
       geom_line(aes(x = year, y = median), size = 1.5) +
       geom_image(
         data = events,
-        mapping = aes(x = Year, y = max(xdf$high[xdf$type == taxa]) - max(xdf$high[xdf$type == taxa]) / 20, image = "_media/icons/down_arrow.png")
+        mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]) - max(xdf$high[xdf$type == cover_type]) / 20, image = "_media/icons/down_arrow.png")
       ) +
       geom_image(
         data = events,
-        mapping = aes(x = Year, y = max(xdf$high[xdf$type == taxa]), image = icon),
+        mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]), image = icon),
         position = position_dodge(width = 1)
       ) +
       labs(
@@ -107,5 +107,8 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
     filename = "figures/temporal_HardCoral_cover.png",
     bg = "transparent", width = 8, height = 7
   )
-  return(xdf)
+  return(list(
+    plot = plot,
+    df.sum = xdf
+  ))
 }
