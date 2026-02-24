@@ -1,6 +1,6 @@
 # =============================================================
 # File: generate_map.R
-# Description: Generates main, inset, and region maps for a ReefCloud tier (WGS84).
+# Description: NOT WORKING Generates main, inset, and region maps for a ReefCloud tier (WGS84).
 # Author: Samuel Chan
 # Date: 2026-01-07
 # Dependencies: sf, ggplot2, rnaturalearth, cowplot, ggspatial, basemaps, dplyr
@@ -147,7 +147,7 @@ generate_map <- function(
   world_wgs <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
   if (!sf::st_is_longlat(world_wgs)) world_wgs <- sf::st_transform(world_wgs, 4326)
   
-  country <- tryCatch(unique(stats::na.omit(sites_wgs$site_country)), error = function(e) NULL)
+  country <- tryCatch(unique(stats::na.omit(sites_wgs$country)), error = function(e) NULL)
   country <- country[1] %||% NA_character_
   if (!is.na(country) && country %in% world_wgs$name) {
     country_wgs <- world_wgs[world_wgs$name == country, ]
@@ -195,36 +195,36 @@ generate_map <- function(
     )
   
   # ---- Build region map (country + boundary, WGS84) ----
-  region_map <- ggplot2::ggplot() +
-    ggplot2::geom_sf(data = world_wgs,   fill = NA, color = NA) +
-    ggplot2::geom_sf(data = country_wgs, fill = "#616161", color = NA) +
-    ggplot2::geom_sf(data = boundary_wgs, fill = boundary_fill, color = "#290101f1", alpha = boundary_alpha) +
-    ggplot2::coord_sf(
-      xlim = sf::st_bbox(country_wgs)[c("xmin", "xmax")],
-      ylim = sf::st_bbox(country_wgs)[c("ymin", "ymax")]
-    ) +
-    ggplot2::theme_void()
+#  region_map <- ggplot2::ggplot() +
+#    ggplot2::geom_sf(data = world_wgs,   fill = NA, color = NA) +
+#    ggplot2::geom_sf(data = country_wgs, fill = "#616161", color = NA) +
+#    ggplot2::geom_sf(data = boundary_wgs, fill = boundary_fill, color = "#290101f1", alpha = boundary_alpha) +
+#    ggplot2::coord_sf(
+#      xlim = sf::st_bbox(country_wgs)[c("xmin", "xmax")],
+#      ylim = sf::st_bbox(country_wgs)[c("ymin", "ymax")]
+#    ) +
+#    ggplot2::theme_void()
   
   # ---- Compose combined map with inset ----
-  combined_map <- cowplot::ggdraw() +
-    cowplot::draw_plot(main_map) +
-    cowplot::draw_plot(
-      inset_map,
-      x      = inset_pos$x, y = inset_pos$y,
-      width  = inset_pos$width, height = inset_pos$height,
-      vjust  = 1, halign = 1, valign = 1, hjust = 1
-    )
+#  combined_map <- cowplot::ggdraw() +
+#    cowplot::draw_plot(main_map) +
+#    cowplot::draw_plot(
+#      inset_map,
+#      x      = inset_pos$x, y = inset_pos$y,
+#      width  = inset_pos$width, height = inset_pos$height,
+#      vjust  = 1, halign = 1, valign = 1, hjust = 1
+#    )
   
   # ---- Save outputs ----
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  ggplot2::ggsave(file.path(out_dir, "Site_Map.png"),   combined_map, width = 5, height = 4, dpi = 300)
-  ggplot2::ggsave(file.path(out_dir, "Region_Map.png"), region_map,   width = 3, height = 4, dpi = 300)
+  ggplot2::ggsave(file.path(out_dir, "Main_Map.png"),   main_map, width = 5, height = 4, dpi = 300)
+  ggplot2::ggsave(file.path(out_dir, "Inset_Map.png"), inset_map,   width = 3, height = 4, dpi = 300)
   
   invisible(list(
     main_map     = main_map,
-    inset_map    = inset_map,
-    region_map   = region_map,
-    combined_map = combined_map
+    inset_map    = inset_map#,
+#    region_map   = region_map,
+#    combined_map = combined_map
   ))
 }
 

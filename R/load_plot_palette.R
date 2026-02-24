@@ -80,7 +80,7 @@
 #' @export hc.pal_cat
 #' @export ma.pal_cat
 #' @export sc.pal_cat
-#' @export palette_for
+#' @export group.pal
 
 # ---- cover_prop palettes (labels) ----
 hc.pal_prop <- c(
@@ -127,33 +127,11 @@ sc.pal_cat <- c(
   "D" = "#f2f0f7"
 )
 
-#' Select a palette by benthic group and domain
-#'
-#' Convenience helper to retrieve a named palette vector for use with
-#' \code{cover_prop} or \code{cover_cat}.
-#'
-#' @param group Character. One of \code{"hc"}, \code{"ma"}, \code{"sc"}.
-#' @param use Character. Domain: \code{"prop"} for \code{cover_prop} labels,
-#'   or \code{"cat"} for \code{cover_cat} A–D codes.
-#'
-#' @return A named character vector of HEX colors suitable for
-#'   [ggplot2::scale_fill_manual()] or [ggplot2::scale_color_manual()].
-#'
-#' @examples
-#' palette_for("hc", use = "prop")
-#' palette_for("ma", use = "cat")
-#'
-#' @export
-palette_for <- function(group = c("hc", "ma", "sc"), use = c("prop", "cat")) {
-  group <- match.arg(group)
-  use   <- match.arg(use)
-  switch(
-    paste(group, use, sep = "_"),
-    "hc_prop" = hc.pal_prop,
-    "ma_prop" = ma.pal_prop,
-    "sc_prop" = sc.pal_prop,
-    "hc_cat"  = hc.pal_cat,
-    "ma_cat"  = ma.pal_cat,
-    "sc_cat"  = sc.pal_cat
-  )
-}
+group.pal <- c(
+  "HARD CORAL" = "#f768a1",
+  "SOFT CORAL" = "#9e9ac8",
+  "MACROALGAE" = "#78c679",
+  "TURF ALGAE" = "#80b1d3",
+  "CRUSTOSE CORALLINE ALGAE" = "#fdb462",
+  "OTHER" = "#ffffb3"
+)

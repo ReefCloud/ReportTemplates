@@ -41,10 +41,10 @@ get_site_summary <- function(tier_id) {
       return(dplyr::tibble(
         site_id        = NA_real_,
         site_name      = NA_character_,
-        site_country   = NA_character_,
-        site_longitude = NA_real_,
-        site_latitude  = NA_real_,
-        local_region   = NA_character_
+        country        = NA_character_,
+        local_region   = NA_character_,
+        latitude       = NA_real_,
+        longitude      = NA_real_
       ))
     }
 
@@ -60,28 +60,28 @@ get_site_summary <- function(tier_id) {
       return(dplyr::tibble(
         site_id        = NA_real_,
         site_name      = NA_character_,
-        site_country   = NA_character_,
-        site_longitude = NA_real_,
-        site_latitude  = NA_real_,
-        local_region   = NA_character_
+        country        = NA_character_,
+        local_region   = NA_character_,
+        latitude       = NA_real_,
+        longitude      = NA_real_
       ))
     }
 
     # Normalize fields
     site_id        <- if (is.null(row$site_id)) NA_real_ else as.numeric(row$site_id) 
     site_name      <- if (is.null(row$site_name)) NA_character_ else as.character(row$site_name)
-    site_country   <- if (is.null(row$site_country)) NA_character_ else as.character(row$site_country)
-    site_longitude <- if (is.null(row$site_longitude)) NA_real_ else as.numeric(row$site_longitude)
-    site_latitude  <- if (is.null(row$site_latitude))  NA_real_ else as.numeric(row$site_latitude)
+    country        <- if (is.null(row$site_country)) NA_character_ else as.character(row$site_country)
     local_region   <- if (is.null(row$local_region))   NA_character_ else as.character(row$local_region)
-
+    latitude       <- if (is.null(row$site_latitude))  NA_real_ else as.numeric(row$site_latitude)
+    longitude      <- if (is.null(row$site_longitude)) NA_real_ else as.numeric(row$site_longitude)
+    
     dplyr::tibble(
       site_id        = site_id,
       site_name      = site_name,
-      site_country   = site_country,
-      site_longitude = site_longitude,
-      site_latitude  = site_latitude,
-      local_region   = local_region
+      country        = country,
+      local_region   = local_region,
+      latitude       = latitude,
+      longitude      = longitude
     )
   }
 
@@ -89,7 +89,7 @@ get_site_summary <- function(tier_id) {
   sites <- purrr::map_dfr(info$site_id, fetch_one)
 
   # Convert to sf
-  sites_sf <- sf::st_as_sf(sites, coords = c("site_longitude", "site_latitude"), crs = 4326, remove = TRUE)
+  sites_sf <- sf::st_as_sf(sites, coords = c("longitude", "latitude"), crs = 4326, remove = FALSE)
 
   sites_sf
 }

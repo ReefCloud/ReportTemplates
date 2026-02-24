@@ -65,9 +65,11 @@ get_benthic_cover <- function(tier_ids) {
         depth == "deep_lt_5m" ~ "shallow",
         depth == "no_depth" ~ NA
       )) |>
-      dplyr::relocate(depth_cat, .after = depth) |> 
+      dplyr::relocate(depth_cat, .after = depth) |>
+      dplyr::relocate(tier_level, .after = tier_id) |> 
       dplyr::select(- depth) |> 
-      dplyr::rename(depth = depth_cat)
+      dplyr::rename(depth = depth_cat) |> 
+      dplyr::select(-element_id, -public, -id, -survey_id)
     
     return(surveys)
   })

@@ -1,0 +1,287 @@
+---
+title: Tutorial Report
+date: today
+author: 'Australian Institute of Marine Science'
+
+license: "CC BY"
+crossref:
+  lof-title: "List of Figures"
+
+filters:
+  - authors-block
+
+format:
+  html:
+    toc: true
+#    bibliography: 
+    fig-width: 8
+    fig-height: 6
+    out-width: "100%"
+    out-height: "auto"
+    fig-align: center
+    fig-dpi: 144
+    code-fold: true
+    embed-resources: true
+    
+#Tonga 93391 2017-2024
+#Palau 1705 2002-2016
+#PNG 65823 2020-2025
+#Vanuatu 1707 2014-2018
+#Fiji 1725 2006-2021
+#Samoa 43039 2022-2023
+---
+
+::: lead
+In this vignette, we will explore how to generate a report using the functions from the **reefcloudReporting** package and the data from the ReefCloud Public Dashboard from the Palau region.
+:::
+
+```{r}
+#| label: loadPackages
+#| include: false
+library(tidyverse)
+library(sf)
+library(knitr)
+library(patchwork)
+#library(reefcloudReporting)
+```
+
+# Accessing ReefCloud Data
+
+ReefCloud data on the [Public Dashboard](https://reefcloud.ai/dashboard/ "ReefCloud Public Dashboard") comes from the projects that users have uploaded on ReefCloud itself. These are shared as a summary of the information which are collated into sites, countries and regions, all of which are searchable and identified using a **Tier ID** that is used for most of the functions.
+
+Here, we use the **Tier ID: 1705** to call for information from Palau to generate a table of key regional summary statistics about the region (@tbl-readRegionalSummary).
+
+```{r}
+#| label: tbl-readRegionalSummary
+#| tbl-cap: "Summary of key tier characteristics"
+#| warning: false
+source("./R/get_regional_summary.R")
+
+info <- get_regional_summary(1705) 
+
+info_tbl <- tibble(
+  field = names(info),
+  value = sapply(info, function(x) {
+    if (length(x) > 1) paste(x, collapse = ", ") else x
+  })
+  ) |> 
+  mutate(field = str_to_title(gsub("_", " ", field)))
+
+knitr::kable(info_tbl) 
+```
+
+We then extract the site information from the same Tier ID, which uses the get_regional_summary function to extract Site IDs and then summarises the site level information. This can take a while if there are many sites within the Tier ID.
+
+This gives us a summary of the sites found within the Tier ID (@tbl-readSiteSummary).
+
+```{r}
+#| label: tbl-readSiteSummary
+#| tbl-cap: "Summary of key survey sites characteristics"
+#| warning: false
+source("./R/get_site_summary.R")
+
+sites <- get_site_summary(1705)
+
+sites_tbl <- sites[1:10,] |> 
+  st_drop_geometry()
+
+names(sites_tbl) <- names(sites_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(sites_tbl)
+```
+
+With the sites and their IDs from the get_site_summary function, we can then extract the different benthic covers for each of these sites. We read the site IDs into get_benthic_cover function to get benthic groupings and cover that we can use for other plots.
+
+Here, because of the number of rows of data, we just show the first 10 rows of the benthic cover table (@tbl-getCover).
+
+```{r}
+#| label: tbl-getCover
+#| tbl-cap: "Mean benthic cover of survey sites within the Region"
+#| warning: false
+source("./R/get_benthic_cover.R")
+
+cover <- get_benthic_cover(sites$site_id)
+
+cover_tbl <- cover[1:10,]
+
+names(cover_tbl) <- names(cover_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(cover_tbl)
+```
+
+If we just want to compare between two specific years, we can use the get_cover_comparisons function instead. Here, we can specify tiers, benthic cover, depth and years for comparison, while it also defaults to Hard Coral, shallow and the first and last year.
+
+This gives us a quick overview of the entire tier cover and changes at each site for the specific benthic category over time (@tbl-getCoverComparison).
+
+```{r}
+#| label: tbl-getCoverComparison
+#| tbl-cap: "Benthic cover comparison of survey sites between two years"
+#| warning: false
+source("./R/get_cover_comparison.R")
+
+covercomparison <- get_cover_comparison(1705, years = c(2009, 2016))
+
+covercomparison_tbl <- covercomparison[1:10,]
+
+names(covercomparison_tbl) <- names(covercomparison_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(covercomparison_tbl)
+```
+
+Similarly, if we have defined the Local Region in ReefCloud, we can use that as a grouping variable to compare between years as well using the get_cover_comparison_lr function instead.
+
+This gives us a similar table to the previous one, but instead of individual sites, we are provided with the local region comparisons (@tbl-getCoverComparisonLR).
+
+```{r}
+#| label: tbl-getCoverComparisonLR
+#| tbl-cap: "Benthic cover comparison of survey sites between two years"
+#| warning: false
+source("./R/get_cover_comparison_lr.R")
+
+covercomparisonlr <- get_cover_comparison_lr(1705, years = c(2009, 2016))
+
+covercomparisonlr_tbl <- covercomparisonlr[1:10,]
+
+names(covercomparisonlr_tbl) <- names(covercomparisonlr_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(covercomparisonlr_tbl)
+```
+
+# Generating Report Figures
+
+The data we have accessed through the ReefCloud API have been converted into usable formats for visualisations. We can then proceed to plot some relevant figures that may be useful to better understand the patterns we are seeing.
+
+First, we generate a map of the monitoring region using generate_map (@fig-plotMap).
+
+```{r}
+#| label: fig-plotMap
+#| fig-cap: "Map of region and surrounding reef sites"
+#| warning: false
+#source("./R/generate_map.R")
+
+#map_plot <- generate_map(1705)
+
+knitr::include_graphics("figures/Region_Map.png")
+```
+
+We can then present the proportions of sites in the different cover categories using two donut plots with plot_donut to visualise a quick glance of the site conditions (@fig-plotDonut).
+
+```{r}
+#| label: fig-plotDonut
+#| fig-cap: "Proportion of sites within different Hard Coral and Macroalgae cover bands in the region in 2016"
+#| warning: false
+source("./R/plot_donut.R")
+
+HC_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "HARD CORAL")
+
+MA_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "MACROALGAE")
+
+HC_donut_plot + MA_donut_plot
+```
+
+We can also plot the Hard Coral cover for each site at the latest year. This gives us an idea of how the hard coral cover varies across the different site and can highlight sites that may be doing poorly.
+
+For this plot, there are a few options to specify other than tier ID which we have been using previously. This includes year, cover_type and depth. Do note the options in specifying these variables. We then call the plot_site_cover function to make the plot for Hard Coral cover (@fig-plotHCCover).
+
+```{r}
+#| label: fig-plotHCCover
+#| fig-cap: "Site-level Hard Coral cover across the region"
+#| warning: false
+source("./R/plot_site_cover.R")
+
+HC_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "HARD CORAL", depth = "shallow")
+
+HC_cover_plot$plot
+
+HC_cover_tbl <- HC_cover_plot$df.sum[,1:10]
+
+names(HC_cover_tbl) <- names(HC_cover_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(HC_cover_tbl)
+```
+
+As an example. we also want to use plot_site_cover to plot the macroalgae cover (@fig-plotMACover).
+
+```{r}
+#| label: fig-plotMACover
+#| fig-cap: "Site-level Macroalgae cover across the region"
+#| warning: false
+source("./R/plot_site_cover.R")
+
+MA_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "MACROALGAE", depth = "shallow")
+
+MA_cover_plot$plot
+
+MA_cover_tbl <- MA_cover_plot$df.sum[,1:10]
+
+names(MA_cover_tbl) <- names(MA_cover_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(MA_cover_tbl)
+```
+
+We might also want to see how the site cover has changed over time. We can start by plotting the site cover for the initial surveys by changing the year value in the function to the first year the surveys were conducted in Palau which was 2002 (@fig-plotHCCoverPast).
+
+```{r}
+#| label: fig-plotHCCoverPast
+#| fig-cap: "Site-level Hard Coral cover across the region in 2004"
+#| warning: false
+source("./R/plot_site_cover.R")
+
+HC_cover_past_plot <- plot_site_cover(1705, year = 2004, cover_type = "HARD CORAL", depth = "shallow")
+
+HC_cover_past_plot$plot
+
+HC_cover_past_tbl <- HC_cover_past_plot$df.sum[,1:10]
+
+names(HC_cover_past_tbl) <- names(HC_cover_past_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(HC_cover_past_tbl)
+```
+
+Knowing just the site Hard Coral and Macroalgae cover may be useful for some sites, but we might also want to see the compositional cover, especially across all sites for an overview. To do this we can use the plot_site_composition function, specifying the Tier ID, Year and Depth to get the plot (@fig-plotSiteComposition).
+
+```{r}
+#| label: fig-plotSiteComposition
+#| fig-cap: "Site-level stacked composition across the region in 2016"
+#| warning: false
+source("./R/plot_site_composition.R")
+
+site_composition <- plot_site_composition(1705, year = 2016, depth = "shallow")
+
+site_composition$plot
+```
+
+With the differences in cover shown between 2002 and 2016, we want to see if there is a trend through time as well. We can do this using the plot_temporal_cover function that uses all the previous functions together to generate a table of mean cover through time, alongside some of the disturbances that have been tracked through time (@fig-plotHCTrend).
+
+```{r}
+#| label: fig-plotHCTrend
+#| fig-cap: "Trends of Hard Coral cover across the region"
+#| warning: false
+source("./R/plot_temporal_cover.R")
+
+HC_trend_plot <- plot_temporal_cover(1705, cover_type = "HARD CORAL")
+
+HC_trend_plot$plot
+
+HC_trend_plot$df.sum
+```
+
+# Discussing the Results
+
+With each of the figures, we can then write some text and description to help substantiate the points we are making. Figures on their own are just used to help visualise some of the information we want to show, but need to be substantiated with other information to drive home a clearer message.
+
+In the second vignette, we show the same functions in a format that displays just the figures and how they are used within a report.

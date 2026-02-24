@@ -6,10 +6,12 @@
 #' \code{get_regional_summary()} to add region/site context for labels.
 #'
 #' @param tier_id Character. ReefCloud tier ID to query.
+#' @param year Numeric (optional). Survey year to filter. Defaults to the maximum year available.
+#' @param depth Character. Depth category to filter (e.g., \code{"shallow"} or \code{"deep"})
 #' @param cover_type Character. Benthic group to plot (e.g., \code{"HARD CORAL"}, \code{"MACROALGAE"}, \code{"SOFT CORAL"}).
 #'   Default \code{"HARD CORAL"}.
-#' @param show_labels Logical. Show per-segment labels (percentages or counts). Default \code{FALSE}.
-#' @param label_format Character. Label type: \code{"percent"} or \code{"count"}. Default \code{"percent"}.
+#' @param show_labels Logical. Show per-segment labels (percentages or counts). Default \code{TRUE}.
+#' @param label_format Character. Label type: \code{"percent"} or \code{"count"}. Default \code{"count"}.
 #' @param donut_width Numeric in (0, 1]. Ring thickness (e.g., \code{0.6}). Default \code{0.6}.
 #'
 #' @return A \code{ggplot} donut chart.
@@ -17,9 +19,11 @@
 #' @export
 plot_donut <- function(
     tier_id,
+    year         = NULL,    
+    depth        = "shallow",
     cover_type   = "HARD CORAL",
-    show_labels  = FALSE,
-    label_format = c("percent", "count"),
+    show_labels  = TRUE,
+    label_format = c("count", "percent"),
     donut_width  = 0.6
 ) {
   
@@ -28,6 +32,7 @@ plot_donut <- function(
   source("R/get_regional_summary.R")
   source("R/add_cover_categories.R")
   source("R/load_plot_palette.R")
+  source("R/select_palette.R")
   
   # ---- Validate inputs ----
   if (missing(tier_id) || length(tier_id) != 1) {
@@ -36,9 +41,15 @@ plot_donut <- function(
   if (!is.character(cover_type) || length(cover_type) != 1) {
     stop("`cover_type` must be a single string (e.g., 'HARD CORAL').")
   }
+  if (!is.character(depth) || length(depth) != 1) {
+    stop("`depth` must be a single string (e.g., 'shallow' or 'deep').")
+  }
   label_format <- match.arg(label_format)
   if (!is.numeric(donut_width) || !is.finite(donut_width) || donut_width <= 0 || donut_width > 1) {
     stop("`donut_width` must be a numeric value in (0, 1].")
+  }
+  if (!is.null(year) && !(is.numeric(year) || is.integer(year)) ) {
+    stop("`year` must be NULL or a numeric/integer year.")
   }
   
   # ---- Fetch info (region name + site count) ----
@@ -49,13 +60,32 @@ plot_donut <- function(
   region_name <- if (!is.null(info) && is.list(info)) info$region_name else NULL
   site_count  <- if (!is.null(info) && is.list(info)) info$site_count  else NULL
   
-  # ---- Retrieve and filter benthic data for the requested cover type ----
+  # ---- Retrieve and filter by year ----
   surveys <- tryCatch(
-    get_benthic_cover(tier_id),
+    get_benthic_cover(info$site_id),
     error = function(e) stop("Failed to retrieve surveys via get_benthic_cover(): ", conditionMessage(e))
   )
   if (is.null(surveys) || !is.data.frame(surveys) || nrow(surveys) == 0) {
     stop("No survey data returned from get_benthic_cover().")
+  }
+  
+  # Filter by depth
+  surveys <- dplyr::filter(surveys, depth == !!depth)
+  
+  # Ensure year column exists
+  if (!"year" %in% names(surveys)) {
+    stop("Fetched survey data lacks a `year` column; cannot filter/select year.")
+  }
+  
+  # Determine default year if not supplied
+  if (is.null(year)) {
+    year <- max(surveys$year, na.rm = TRUE)
+  }
+  
+  # Filter to selected year             
+  surveys <- dplyr::filter(surveys, year == !!year)
+  if (nrow(surveys) == 0) {
+    stop("No survey rows found after filtering to year = ", year, ".")
   }
   
   # Detect group column (robust)
@@ -72,7 +102,7 @@ plot_donut <- function(
     tolower(.data[[group_col]]) == tolower(cover_type)
   )
   if (nrow(xdf) == 0) {
-    stop(sprintf("No rows found for cover_type='%s' in column '%s'.", cover_type, group_col))
+    stop(sprintf("No rows found for cover_type='%s' in depth '%s' for year %s.", cover_type, depth, year))
   }
   
   # ---- Classify into range-based categories using median cover ----
@@ -104,7 +134,7 @@ plot_donut <- function(
   gp <- group_map[[ct_upper]]
   if (is.null(gp)) gp <- "hc"  # sensible fallback
   
-  pal <- palette_for(group = gp, use = "prop")
+  pal <- select_palette(group = gp, use = "prop")
   
   # Validate palette names vs. factor levels
   missing_names <- setdiff(range_levels, names(pal))
@@ -118,39 +148,42 @@ plot_donut <- function(
   # ---- Build whole-donut plot ----
   xdf_sum$x <- 1
   
-  title_txt <- if (!is.null(region_name)) {
-    paste("Coral Reef Site Condition", region_name, "Region")
-  } else {
-    "Coral Reef Site Condition"
-  }
-  
-
-  cover_title <- stringr::str_to_title(cover_type)
-  subtitle_txt <- paste0(
-    "Sites by ", cover_title, " cover category",
-    if (!is.null(site_count)) paste0("n: ", site_count) else ""
-  )
-  
-  p <- ggplot2::ggplot(xdf_sum, ggplot2::aes(x = x, y = Site_No, fill = cover_prop)) +
+  plot <- ggplot2::ggplot(xdf_sum, ggplot2::aes(x = x, y = Site_No, fill = cover_prop)) +
     ggplot2::geom_col(width = donut_width, color = NA) +
     ggplot2::coord_polar(theta = "y") +
-    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::scale_fill_manual(name = "Cover Category", values = pal) +
     ggplot2::theme_void() +
     ggplot2::theme(legend.position = "bottom", legend.direction = "horizontal") +
     ggplot2::labs(
-      title = title_txt,
-      subtitle = subtitle_txt
+      title = paste("Coral Reef Site Overview for ", ifelse(is.null(region_name), tier_id, region_name)),
+      subtitle = sprintf("%s Depth: %s — Year: %s",
+                         stringr::str_to_title(cover_type), depth, year)
     )
+  
   
   # Segment labels (optional)
   if (isTRUE(show_labels)) {
     labs <- if (label_format == "percent") paste0(round(xdf_sum$pct), "%") else as.character(xdf_sum$Site_No)
-    p <- p + ggplot2::geom_text(
+    plot <- plot + ggplot2::geom_text(
       ggplot2::aes(label = labs),
       position = ggplot2::position_stack(vjust = 0.5),
       size = 4
     )
   }
   
-  return(p)
+  # Save plot (filename now includes year)
+  ggplot2::ggsave(
+    plot,
+    filename = paste0(
+      "figures/",
+      "SiteOverview_",
+      ifelse(is.null(region_name), tier_id, region_name), "_",
+      stringr::str_replace_all(cover_type, " ", "_"), "_",
+      depth, "_",
+      year, ".png"
+    ),
+    bg = "transparent", width = 12, height = 8
+  )
+  
+  return(plot)
 }

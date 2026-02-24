@@ -1,0 +1,224 @@
+---
+title: Palau Report
+date: today
+author: 'Palau International Coral Reef Center'
+
+license: "CC BY"
+crossref:
+  lof-title: "List of Figures"
+
+filters:
+  - authors-block
+
+format:
+  html:
+    toc: true
+#    bibliography: 
+    fig-width: 8
+    fig-height: 6
+    out-width: "100%"
+    out-height: "auto"
+    fig-align: center
+    fig-dpi: 144
+    code-fold: true
+    embed-resources: true
+    
+---
+
+::: lead
+In this vignette, we will explore how to generate a report using the functions from the **reefcloudReporting** package and the data from the ReefCloud Public Dashboard from the Palau region in the style of one of the many [Status and Trends Reports from Palau](https://drive.google.com/file/d/1JE5T6sP-E9BftM60OOziZ_G09xYaL6LO/view).
+:::
+
+```{r}
+#| label: loadPackages
+#| include: false
+library(tidyverse)
+library(sf)
+library(knitr)
+library(patchwork)
+#library(reefcloudReporting)
+```
+
+# Introduction
+
+Coral reefs are important ecosystems that serve as habitat and provides many ecosystem functions, especially to the regional communities of coastal nations. Yet, reefs around the world have been impacted by both natural and anthropogenic disturbances that affect the ecosystem and the services they provide.
+
+While the reefs in Palau have been relatively resilient to the impacts of these stressors, several super-typhoons have had great impact to the reefs there. To assess the impact, long-term monitoring needs to be consistently conducted to document the changes over time and to report on the effects of conservation or management actions.
+
+Here, we look at the last monitoring year of data in 2016 to build upon older reports of past data.
+
+# Methods
+
+Reefs have been surveyed biannually or more depending on disturbances at the different reef sites. At both the shallow (3m) and deep (10m) transects, five 50 m transects are placed and photographed. This data has been previously manually scored using CPCe, but were later fed into ReefCloud for a more efficient analysis of the image data from human annotations. Benthic categories were scored accordingly, to genus level if possible and aggregated into the different benthic categories.
+
+ReefCloud processes the raw data that have been made publicly available, using models that account for both spatial and temporal variations to produce data and trends shown on the [Public Dashboard](https://reefcloud.ai/dashboard/ "ReefCloud Public Dashboard"). We then access this data using the API and the reefcloudReporting package to develop this report. 
+
+# Results
+
+```{r}
+#| label: readRegionalSummary
+#| tbl-cap: "Summary of key tier characteristics"
+#| warning: false
+source("./R/get_regional_summary.R")
+
+info <- get_regional_summary(1705) 
+```
+
+Across Palau, `r info$data_contributors` have surveyed `r info$site_count` sites with a total of `r info$photo_quadrats` images taken (@fig-plotMap; @tbl-readRegionalSummary).
+
+```{r}
+#| label: fig-plotMap
+#| fig-cap: "Map of region and surrounding reef sites"
+#| warning: false
+#source("./R/generate_map.R")
+
+#map_plot <- generate_map(1705)
+
+knitr::include_graphics("figures/Region_Map.png")
+```
+
+```{r}
+#| label: tbl-readRegionalSummary
+#| tbl-cap: "Summary of key tier characteristics"
+#| warning: false
+
+info_tbl <- tibble(
+  field = names(info),
+  value = sapply(info, function(x) {
+    if (length(x) > 1) paste(x, collapse = ", ") else x
+  })
+  ) |> 
+  mutate(field = str_to_title(gsub("_", " ", field)))
+
+knitr::kable(info_tbl) 
+```
+
+A detailed breakdown of the site locations and their local regions can be found in (@tbl-readSiteSummary).
+
+```{r}
+#| label: tbl-readSiteSummary
+#| tbl-cap: "Summary of key survey sites characteristics"
+#| warning: false
+source("./R/get_site_summary.R")
+
+sites <- get_site_summary(1705)
+
+sites_tbl <- sites |> 
+  st_drop_geometry() |> 
+  select(-latitude, -longitude, -country)
+
+names(sites_tbl) <- names(sites_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(sites_tbl)
+```
+
+## Overview
+
+Across all 42 sites both shallow and deep in 2016, we can see that the number of sites with high coral cover (>30%) is slightly less than half, while most sites had low macroalgae cover (@fig-plotDonut1, @fig-plotDonut2) 
+
+```{r}
+#| label: fig-plotDonut1
+#| fig-cap: "Proportion of shallow sites within different Hard Coral and Macroalgae cover bands in the region in 2016"
+#| warning: false
+source("./R/plot_donut.R")
+
+HC_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "HARD CORAL")
+
+MA_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "MACROALGAE")
+
+HC_donut_plot + MA_donut_plot
+```
+
+```{r}
+#| label: fig-plotDonut2
+#| fig-cap: "Proportion of deep sites within different Hard Coral and Macroalgae cover bands in the region in 2016"
+#| warning: false
+source("./R/plot_donut.R")
+
+HC_donut_plot2 <- plot_donut(1705, year = 2016, depth = "deep", cover_type = "HARD CORAL")
+
+MA_donut_plot2 <- plot_donut(1705, year = 2016, depth = "deep", cover_type = "MACROALGAE")
+
+HC_donut_plot2 + MA_donut_plot2
+```
+
+## Site-level cover
+
+Looking at the sites individually, Nikko and Taoch sites have highest cover with many sites displaying very low coral cover (@fig-plotHCCover, @tbl-plotHCCover). 
+
+```{r}
+#| label: fig-plotHCCover
+#| fig-cap: "Site-level Hard Coral cover across the region"
+#| warning: false
+source("./R/plot_site_cover.R")
+
+HC_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "HARD CORAL", depth = "shallow")
+
+HC_cover_plot$plot
+```
+
+```{r}
+#| label: tbl-plotHCCover
+#| tbl-cap: "Site-level Hard Coral cover across the region"
+#| warning: false
+HC_cover_tbl <- HC_cover_plot$df.sum[,1:10]
+
+names(HC_cover_tbl) <- names(HC_cover_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(HC_cover_tbl)
+```
+
+While macroalgae cover across all sites remain low, Ngelukes does stand out with higher macroalgae cover than the rest, and might need to be re-assessed in the future (@fig-plotMACover, @tbl-plotMACover).
+
+```{r}
+#| label: fig-plotMACover
+#| fig-cap: "Site-level Macroalgae cover across the region"
+#| warning: false
+source("./R/plot_site_cover.R")
+
+MA_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "MACROALGAE", depth = "shallow")
+
+MA_cover_plot$plot
+```
+
+```{r}
+#| label: tbl-plotMACover
+#| tbl-cap: "Site-level Macroalgae cover across the region"
+#| warning: false
+MA_cover_tbl <- MA_cover_plot$df.sum[,1:10]
+
+names(MA_cover_tbl) <- names(MA_cover_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(MA_cover_tbl)
+```
+
+## Benthic composition
+
+In general, benthic composition shows much of the same story as before, but highlights a few important points (@fig-plotSiteComposition1, @fig-plotSiteComposition2). Soft coral remains to be a low component of the reefs in 2016, but Turf Algae dominates much of the benthos both shallow and deep. Crustose coralline algae also appears more commonly at some sites that have lower Hard Coral cover and may be indicative of recovery, such as at Peleliu shallow. 
+
+```{r}
+#| label: fig-plotSiteComposition1
+#| fig-cap: "Site-level stacked composition across the region in 2016"
+#| warning: false
+source("./R/plot_site_composition.R")
+
+site_composition1 <- plot_site_composition(1705, year = 2016, depth = "shallow")
+
+site_composition1$plot
+```
+```{r}
+#| label: fig-plotSiteComposition2
+#| fig-cap: "Site-level stacked composition across the region in 2016"
+#| warning: false
+source("./R/plot_site_composition.R")
+
+site_composition2 <- plot_site_composition(1705, year = 2016, depth = "deep")
+
+site_composition2$plot
+```

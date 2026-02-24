@@ -1,7 +1,7 @@
 # =============================================================
 # File: plot_temporal_cover.R
 # Description: Generates and saves a plot of percent cover trends for a specified region and functional group, using data extracted from the ReefCloud Public Dashboard.
-# Author: Manuel Gonzalez-Rivero and Samuel Chan
+# Author: Manuel Gonzalez-Rivero
 # Date: 2025-11-13
 # Dependencies: ggimage, ggplot2, tidyverse, scales, hrbrthemes
 # =============================================================
@@ -30,19 +30,19 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
   require(tidyverse)
   require(scales)
   require(hrbrthemes)
-  
+
   # Load dependent functions
   source("R/get_regional_summary.R")
   source("R/get_benthic_cover.R")
   source("R/get_disturbance.R")
   source("R/integer_breaks.R")
-  
+
   # Get info and modeled cover over time for this tier_id
   info <- get_regional_summary(tier_id)
   xdf <- get_benthic_cover(tier_id)
   
   # Get disturbances for this tier id
-  
+
   events <- get_disturbance(tier_id, e_type = "thermal_stress") |>
     filter(severity > 1, percentage_total_reef > 0.05) |>
     mutate(dist = "DHW", year = year - 0.5, icon = "_media/icons/bleaching.png") |>
@@ -57,44 +57,50 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
         distinct()
     ) |>
     filter(year >= min(year(xdf$date)))
-  
+
   plot <- xdf |>
     filter(type == cover_type) |>
     mutate(year = year(date)) |>
     ggplot() +
-    geom_pointrange(aes(x = year, y = median, ymin = low, ymax = high), size = 1, color = "black", linetype = "dashed") +
-    geom_line(aes(x = year, y = median), size = 1.5) +
-    geom_image(
-      data = events,
-      mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]) - max(xdf$high[xdf$type == cover_type]) / 20, image = "_media/icons/down_arrow.png")
-    ) +
-    geom_image(
-      data = events,
-      mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]), image = icon),
-      position = position_dodge(width = 1)
-    ) +
-    labs(
-      title = "Hard Coral Cover Trend",
-      subtitle = "Median Cover with 95% Credible Intervals",
-      x = "Year",
-      y = "Cover (%)"
-    ) +
-    scale_x_continuous(breaks = integer_breaks()) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(panel.grid.major = ggplot2::element_blank(),  # Remove major grid lines
-                   panel.grid.minor = ggplot2::element_blank()   # Remove minor grid lines
-    ) #+
-  #annotate(
-  #  "text",
-  #  x = Inf,
-  # y = -Inf,
-  #  label = sprintf("Data Credits: %s", paste(info$data_contributors, collapse = ". ")),
-  #  hjust = 1.1,
-  #  vjust = -1.1,
-  #  size = 3,
-  #  color = "black"
-  #)
-  
+      geom_pointrange(aes(x = year, y = median, ymin = low, ymax = high), size = 1, color = "black", linetype = "dashed") +
+      geom_line(aes(x = year, y = median), size = 1.5) +
+      geom_image(
+        data = events,
+        mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]) - max(xdf$high[xdf$type == cover_type]) / 20, image = "_media/icons/down_arrow.png")
+      ) +
+      geom_image(
+        data = events,
+        mapping = aes(x = year, y = max(xdf$high[xdf$type == cover_type]), image = icon),
+        position = position_dodge(width = 1)
+      ) +
+      labs(
+        title = "Hard Coral Cover Trend",
+        subtitle = "Median Cover with 95% Credible Intervals",
+        x = "Year",
+        y = "Cover (%)"
+        ) +
+      scale_x_continuous(breaks = integer_breaks()) +
+      theme_ipsum(grid = "") +
+      theme(
+        legend.position = "bottom",
+        panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.title = element_text(size = 14, face = "bold"),
+        plot.subtitle = element_text(size = 12),
+        plot.caption = element_text(size = 10),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        axis.title.x = element_text(size = 12, face = "bold")
+      ) #+
+      #annotate(
+      #  "text",
+      #  x = Inf,
+      # y = -Inf,
+      #  label = sprintf("Data Credits: %s", paste(info$data_contributors, collapse = ". ")),
+      #  hjust = 1.1,
+      #  vjust = -1.1,
+      #  size = 3,
+      #  color = "black"
+      #)
+
   ggsave(
     plot,
     filename = "figures/Temporal_HardCoral_Trend.png",

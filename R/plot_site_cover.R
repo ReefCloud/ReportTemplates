@@ -53,7 +53,7 @@ plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", dep
   xdf <- get_benthic_cover(sdf$site_id) |>
     dplyr::filter(type == !!cover_type) |> 
     dplyr::filter(depth == !!depth) |>
-    dplyr::select(-element_id, -id, -survey_id, -tier_level) |>
+    dplyr::select(-tier_level) |>
     dplyr::left_join(sdf, by = c("tier_id" = "site_id")) |>
     add_cover_categories()
   
@@ -84,20 +84,23 @@ plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", dep
       ggplot2::aes(x = site_name, y = median, ymin = low, ymax = high, col = cover_prop)) +
     ggplot2::geom_hline(
       ggplot2::aes(yintercept = 30), col = palette[2], linetype = 2) +
-    ggplot2::scale_color_manual(values = palette) +
+    ggplot2::scale_color_manual(name = "Cover Proportion", values = palette) +
     ggplot2::scale_y_continuous(name = "Cover (%)", limits = c(0, 100)) +
     ggplot2::scale_x_discrete(name = "Sites") +
-    ggplot2::theme_void() +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(panel.grid.major = ggplot2::element_blank(),  # Remove major grid lines
+                   panel.grid.minor = ggplot2::element_blank()   # Remove minor grid lines
+                   ) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
     ggplot2::labs(
-      title = paste("Coral Reef Habitat Condition", info$region_name, "Region"),
-      subtitle = sprintf("Sites by descending %s cover category", stringr::str_to_title(cover_type))
+      title = paste("Coral Reef Habitat Condition for ", info$region_name),
+      subtitle = sprintf("Sites by descending %s cover in %s reefs in %s", stringr::str_to_title(cover_type), depth, year)
     )
   
   # Save plot
   ggplot2::ggsave(plot,
          filename = paste0("figures/", "SiteCover_", stringr::str_replace_all(cover_type, " ", "_"), ".png"),
-         bg = "transparent", width = 12, height = 6
+         bg = "transparent", width = 12, height = 8
   )
   
   return(list(
