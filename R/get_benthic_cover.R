@@ -37,6 +37,9 @@
 
 get_benthic_cover <- function(tier_ids) {
   
+  old_opts <- options(dplyr.summarise.inform = FALSE)
+  on.exit(options(old_opts), add = TRUE)
+  
   all_surveys <- lapply(tier_ids, function(tier_id) {
     url <- sprintf("https://api.reefcloud.ai/reefcloud/dashboard-api/surveys/%s", tier_id)
     response <- httr::GET(url, httr::timeout(30))
@@ -57,22 +60,46 @@ get_benthic_cover <- function(tier_ids) {
       dplyr::select(-id) |>
       tidyr::unnest(compositions) |>
       dplyr::mutate(year = lubridate::year(date),
-                    tier_id = tier_id) |>  # Add tier_id for reference
-      dplyr::relocate(year, .after = date) |>
-      dplyr::relocate(tier_id, .after = tier_level) |> 
+                    tier_id = tier_id) |> 
       dplyr::mutate(depth_cat = dplyr::case_when(
         depth == "deep_gt_5m" ~ "deep",
         depth == "deep_lt_5m" ~ "shallow",
-        depth == "no_depth" ~ NA
+        depth == "no_depth" ~ "none"
       )) |>
-      dplyr::relocate(depth_cat, .after = depth) |>
-      dplyr::relocate(tier_level, .after = tier_id) |> 
       dplyr::select(- depth) |> 
       dplyr::rename(depth = depth_cat) |> 
-      dplyr::select(-element_id, -public, -id, -survey_id)
+      dplyr::select(-element_id, -public, -id, -survey_id) |> 
+      dplyr::mutate(type = tolower(type)) |> 
+      dplyr::mutate(type = dplyr::case_when(
+        type == "cyanobacteria" ~ "other",
+        type == "seagrass" ~ "other",
+        type == "other invertebrates" ~ "other",
+        type == "soft sediment" ~ "other",
+        .default = type
+      )) |> 
+      dplyr::mutate(type_code = dplyr::case_when(
+        type == "hard coral" ~ "hc",
+        type == "soft coral" ~ "sc",
+        type == "macroalgae" ~ "ma",
+        type == "turf algae" ~ "ta",
+        type == "crustose coralline algae" ~ "ca",
+        type == "other" ~ "ot"
+        ))
     
-    return(surveys)
-  })
+    # group up all the different others
+    surveys <- surveys |> 
+      dplyr::group_by(tier_id, tier_level, date, year, depth, type, type_code, .drop = FALSE) |> 
+      dplyr::summarise(low = sum(low),
+                mean = sum(mean),
+                median = sum(median),
+                high = sum(high)) |> 
+      dplyr::ungroup() |> 
+      dplyr::relocate(tier_id, .before = tier_level) |> 
+      dplyr::relocate(year, .after = date) |> 
+      dplyr::relocate(depth, .after = year) |> 
+      dplyr::relocate(type_code, .after = type)
+  }
+  )
   
   # Combine all non-null results
   combined <- dplyr::bind_rows(all_surveys)

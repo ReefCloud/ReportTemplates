@@ -24,7 +24,7 @@
 #' # Example usage:
 #' plot_temporal_cover("your_tier_id")
 
-plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
+plot_temporal_cover <- function(tier_id, cover_type = "hard coral") {
   require(ggimage)
   require(ggplot2)
   require(tidyverse)
@@ -74,8 +74,8 @@ plot_temporal_cover <- function(tier_id, cover_type = "HARD CORAL") {
       position = position_dodge(width = 1)
     ) +
     labs(
-      title = "Hard Coral Cover Trend",
-      subtitle = "Median Cover with 95% Credible Intervals",
+      title = "Overall Hard Coral Cover Trend",
+      subtitle = "Median Cover with 95% Credible Intervals and Disturbances",
       x = "Year",
       y = "Cover (%)"
     ) +

@@ -20,7 +20,6 @@
 
 get_site_summary <- function(tier_id) {
   # Get site list for the tier/region
-  # Prefer using your package import: get_regional_summary()
   info <- get_regional_summary(tier_id = tier_id)
 
   if (!"site_id" %in% names(info) || is.null(info$site_id) || length(info$site_id) == 0L) {

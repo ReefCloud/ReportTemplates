@@ -32,7 +32,7 @@
 #' @import ggplot2 dplyr forcats stringr sf
 #' @export
 
-plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", depth = "shallow") {
+plot_site_cover <- function(tier_id, year = NULL, cover_type = "hard coral", depth = "shallow") {
   
   # Load required functions
   source("R/get_regional_summary.R")
@@ -66,11 +66,11 @@ plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", dep
   xdf <- xdf |> dplyr::filter(year == !!year)
   
   # Define palette
-  palette <- if (cover_type == "HARD CORAL") {
+  palette <- if (cover_type == "hard coral") {
     hc.pal_prop
-  } else if (cover_type == "MACROALGAE") {
+  } else if (cover_type == "macroalgae") {
     ma.pal_prop
-  } else if (cover_type == "SOFT CORAL") {
+  } else if (cover_type == "soft coral") {
     sc.pal_prop
   } else {
     c("A" = "#00734D", "B" = "#F0C918", "C" = "#F47721", "D" = "#ED1C24") # fallback
@@ -93,8 +93,11 @@ plot_site_cover <- function(tier_id, year = NULL, cover_type = "HARD CORAL", dep
                    ) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
     ggplot2::labs(
-      title = paste("Coral Reef Habitat Condition for ", info$region_name),
-      subtitle = sprintf("Sites by descending %s cover in %s reefs in %s", stringr::str_to_title(cover_type), depth, year)
+      title = paste("Coral Reef Site Condition for ", info$region_name),
+      subtitle = sprintf("Sites by descending %s cover fo reefs in Depth: %s, Year: %s", 
+                         stringr::str_to_title(cover_type), 
+                         stringr::str_to_title(depth), 
+                         year)
     )
   
   # Save plot

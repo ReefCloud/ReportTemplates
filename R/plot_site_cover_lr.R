@@ -80,8 +80,11 @@ plot_site_cover_lr <- function(tier_id, year = NULL, cover_type = "HARD CORAL", 
       ) +
       ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
       ggplot2::labs(
-        title = paste("Coral Reef Habitat Condition - Local Region", region),
-        subtitle = sprintf("%s cover category", stringr::str_to_title(cover_type))
+        title = paste("Coral Reef Site Overview for Local Region:", region),
+        subtitle = sprintf("Overall %s condition for reefs in Depth: %s, Year: %s", 
+                           stringr::str_to_title(cover_type), 
+                           stringr::str_to_title(depth),
+                           year)
       )
   })
   

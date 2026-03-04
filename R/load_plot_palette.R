@@ -25,6 +25,8 @@
 #'   \item{hc.pal_cat}{Hard coral palette keyed to \code{cover_cat} A–D (pink gradient).}
 #'   \item{ma.pal_cat}{Macroalgae palette keyed to \code{cover_cat} A–D (green gradient).}
 #'   \item{sc.pal_cat}{Soft coral palette keyed to \code{cover_cat} A–D (purple gradient).}
+#'   \item{group.pal}{Benthic groups palette keyed to \code{type} hard coral, soft coral, macroalgae, turf algae, crustose coralline algae, other (discrete colours).}
+#'   \item{groupcode.pal}{Benthic groups palette keyed to \code{type_code} hc, sc, ma, ta, ca, ot (discrete colours).}
 #' }
 #'
 #' @details
@@ -67,11 +69,6 @@
 #'   scale_fill_manual(values = ma.pal_cat) +
 #'   theme_minimal()
 #'
-#' # Helper to pick palette by domain ('prop' or 'cat') and group ('hc', 'ma', 'sc')
-#' ggplot(df_prop, aes(x = cover_prop, y = value, fill = cover_prop)) +
-#'   geom_col() +
-#'   scale_fill_manual(values = palette_for("hc", use = "prop")) +
-#'   theme_minimal()
 #'
 #' @seealso [ggplot2::scale_fill_manual()], [ggplot2::scale_color_manual()]
 #' @export hc.pal_prop
@@ -81,6 +78,7 @@
 #' @export ma.pal_cat
 #' @export sc.pal_cat
 #' @export group.pal
+#' @export groupcode.pal
 
 # ---- cover_prop palettes (labels) ----
 hc.pal_prop <- c(
@@ -128,10 +126,19 @@ sc.pal_cat <- c(
 )
 
 group.pal <- c(
-  "HARD CORAL" = "#f768a1",
-  "SOFT CORAL" = "#9e9ac8",
-  "MACROALGAE" = "#78c679",
-  "TURF ALGAE" = "#80b1d3",
-  "CRUSTOSE CORALLINE ALGAE" = "#fdb462",
-  "OTHER" = "#ffffb3"
+  "hard coral" = "#f768a1",
+  "soft coral" = "#9e9ac8",
+  "macroalgae" = "#78c679",
+  "turf algae" = "#80b1d3",
+  "crustose coralline algae" = "#fdb462",
+  "other" = "#ffffb3"
+)
+
+groupcode.pal <- c(
+  "hc" = "#f768a1",
+  "sc" = "#9e9ac8",
+  "ma" = "#78c679",
+  "ta" = "#80b1d3",
+  "ca" = "#fdb462",
+  "ot" = "#ffffb3"
 )

@@ -7,9 +7,10 @@
 #'
 #' @param tier_id Character. ReefCloud tier ID to query.
 #' @param year Numeric (optional). Survey year to filter. Defaults to the maximum year available.
-#' @param depth Character. Depth category to filter (e.g., \code{"shallow"} or \code{"deep"})
-#' @param cover_type Character. Benthic group to plot (e.g., \code{"HARD CORAL"}, \code{"MACROALGAE"}, \code{"SOFT CORAL"}).
-#'   Default \code{"HARD CORAL"}.
+#' @param depth Character. Depth category to filter (e.g., \code{"shallow"}, \code{"deep"} or \code{"none"})
+#' @param cover_type Character. Benthic group to plot (e.g., \code{"hard coral"}, \code{"macroalgae"}, 
+#' \code{"soft coral"}, \code{"turf algae"}, \code{"crustose coralline algae"}, \code{"other"}).
+#'   Default \code{"hard coral"}.
 #' @param show_labels Logical. Show per-segment labels (percentages or counts). Default \code{TRUE}.
 #' @param label_format Character. Label type: \code{"percent"} or \code{"count"}. Default \code{"count"}.
 #' @param donut_width Numeric in (0, 1]. Ring thickness (e.g., \code{0.6}). Default \code{0.6}.
@@ -21,7 +22,7 @@ plot_donut <- function(
     tier_id,
     year         = NULL,    
     depth        = "shallow",
-    cover_type   = "HARD CORAL",
+    cover_type   = "hard coral",
     show_labels  = TRUE,
     label_format = c("count", "percent"),
     donut_width  = 0.6
@@ -39,10 +40,10 @@ plot_donut <- function(
     stop("`tier_id` must be a single character ID.")
   }
   if (!is.character(cover_type) || length(cover_type) != 1) {
-    stop("`cover_type` must be a single string (e.g., 'HARD CORAL').")
+    stop("`cover_type` must be a single string (e.g., 'hard coral').")
   }
   if (!is.character(depth) || length(depth) != 1) {
-    stop("`depth` must be a single string (e.g., 'shallow' or 'deep').")
+    stop("`depth` must be a single string (e.g., 'shallow', 'deep' or 'none').")
   }
   label_format <- match.arg(label_format)
   if (!is.numeric(donut_width) || !is.finite(donut_width) || donut_width <= 0 || donut_width > 1) {
@@ -156,8 +157,8 @@ plot_donut <- function(
     ggplot2::theme(legend.position = "bottom", legend.direction = "horizontal") +
     ggplot2::labs(
       title = paste("Coral Reef Site Overview for ", ifelse(is.null(region_name), tier_id, region_name)),
-      subtitle = sprintf("%s Depth: %s — Year: %s",
-                         stringr::str_to_title(cover_type), depth, year)
+      subtitle = sprintf("Overall %s condition for reefs in Depth: %s, Year: %s",
+                         stringr::str_to_title(cover_type), stringr::str_to_title(depth), year)
     )
   
   

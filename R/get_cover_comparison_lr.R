@@ -26,9 +26,9 @@
 #'
 #' @param tier_id Character or numeric. Region/tier identifier used by your helpers.
 #' @param years Optional numeric length-2 vector. If omitted, uses c(min(year), max(year)).
-#' @param cover_type Character. One of "HARD CORAL", "MACROALGAE", "SOFT CORAL",
-#'        "TURF ALGAE", "CRUSTOSE CORALLINE ALGAE", "OTHER". Default "HARD CORAL".
-#' @param depth Character. One of "shallow", "deep". Default "shallow".
+#' @param cover_type Character. One of "hard coral", "macroalgae", "soft coral",
+#'        "turf algae", "crustose coralline algae", "other". Default "hard coral".
+#' @param depth Character. One of "shallow", "deep" or "none". Default "shallow".
 #' @param local_region_col Character scalar. Name of the column in \code{xdf}
 #'        (after joining site metadata) that contains the Local Region label.
 #'        Default \code{"local_region"}.
@@ -40,7 +40,7 @@
 #' @examples
 #' \dontrun{
 #' tab_lr <- get_cover_comparison_lr(1705)
-#' tab_lr_ma <- get_cover_comparison_lr(1705, cover_type = "MACROALGAE", depth = "deep")
+#' tab_lr_ma <- get_cover_comparison_lr(1705, cover_type = "macroalgae", depth = "deep")
 #' tab_lr_custom <- get_cover_comparison_lr(1705, years = c(2009, 2016))
 #' # If your local region column is named differently:
 #' tab_lr_named <- get_cover_comparison_lr(1705, local_region_col = "local_region_name")
@@ -50,7 +50,7 @@
 #' @export
 get_cover_comparison_lr <- function(tier_id,
                                     years = NULL,
-                                    cover_type = "HARD CORAL",
+                                    cover_type = "hard coral",
                                     depth = "shallow",
                                     local_region_col = "local_region") {
   # ---- Load required helpers ----------------------------------------------
@@ -62,9 +62,8 @@ get_cover_comparison_lr <- function(tier_id,
   if (missing(tier_id) || length(tier_id) != 1) {
     stop("`tier_id` must be length-1 (character or numeric).", call. = FALSE)
   }
-  cover_type <- toupper(cover_type)
-  allowed_types <- c("HARD CORAL", "MACROALGAE", "SOFT CORAL",
-                     "TURF ALGAE", "CRUSTOSE CORALLINE ALGAE", "OTHER")
+  allowed_types <- c("hard coral", "macroalgae", "soft coral",
+                     "turf algae", "crustose coralline algae", "other")
   if (!cover_type %in% allowed_types) {
     stop("`cover_type` must be one of: ", paste(allowed_types, collapse = ", "), call. = FALSE)
   }

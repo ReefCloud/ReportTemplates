@@ -43,6 +43,7 @@ library(sf)
 library(knitr)
 library(patchwork)
 #library(reefcloudReporting)
+options(digits = 3)
 ```
 
 # Accessing ReefCloud Data
@@ -53,7 +54,7 @@ Here, we use the **Tier ID: 1705** to call for information from Palau to generat
 
 ```{r}
 #| label: tbl-readRegionalSummary
-#| tbl-cap: "Summary of key tier characteristics"
+#| tbl-cap: "Overview of key characteristics"
 #| warning: false
 source("./R/get_regional_summary.R")
 
@@ -67,6 +68,9 @@ info_tbl <- tibble(
   ) |> 
   mutate(field = str_to_title(gsub("_", " ", field)))
 
+names(info_tbl) <- names(info_tbl) |> 
+  str_to_title()
+
 knitr::kable(info_tbl) 
 ```
 
@@ -76,7 +80,7 @@ This gives us a summary of the sites found within the Tier ID (@tbl-readSiteSumm
 
 ```{r}
 #| label: tbl-readSiteSummary
-#| tbl-cap: "Summary of key survey sites characteristics"
+#| tbl-cap: "Summary and characteristics of Survey Sites in the Region"
 #| warning: false
 source("./R/get_site_summary.R")
 
@@ -92,23 +96,50 @@ names(sites_tbl) <- names(sites_tbl) |>
 knitr::kable(sites_tbl)
 ```
 
+If we are interested in just a tier, we can also use get_tier_summary to extract the information for one specific tier and their boundaries, which gives us just some information about that tier (@tbl-readTierSummary).
+
+```{r}
+#| label: tbl-readTierSummary
+#| tbl-cap: "Summary and characteristics of Tier"
+#| warning: false
+
+source("./R/get_tier_summary.R")
+
+tier <- get_tier_summary(1705)
+
+tier_tbl <- tier |> 
+  st_drop_geometry()
+
+names(tier_tbl) <- names(tier_tbl) |> 
+  gsub("_", " ", x = _) |>
+  str_to_title()
+
+knitr::kable(tier_tbl)
+```
+
 With the sites and their IDs from the get_site_summary function, we can then extract the different benthic covers for each of these sites. We read the site IDs into get_benthic_cover function to get benthic groupings and cover that we can use for other plots.
 
 Here, because of the number of rows of data, we just show the first 10 rows of the benthic cover table (@tbl-getCover).
 
 ```{r}
 #| label: tbl-getCover
-#| tbl-cap: "Mean benthic cover of survey sites within the Region"
+#| tbl-cap: "Modelled benthic cover of Survey Sites within the Region"
 #| warning: false
 source("./R/get_benthic_cover.R")
 
 cover <- get_benthic_cover(sites$site_id)
 
-cover_tbl <- cover[1:10,]
-
+cover_tbl <- cover[1:10,] |> 
+  dplyr::select(- date) |> 
+  dplyr::mutate(depth = stringr::str_to_title(depth)) |> 
+  dplyr::mutate(type = stringr::str_to_title(type)) |> 
+  dplyr::mutate(type_code = stringr:: str_to_upper(type_code)) |> 
+  dplyr::select(- low, - high) |> 
+  dplyr::rename(modelled_mean = mean, modelled_median = median)
+  
 names(cover_tbl) <- names(cover_tbl) |> 
   gsub("_", " ", x = _) |>
-  str_to_title()
+  str_to_title() 
 
 knitr::kable(cover_tbl)
 ```
@@ -119,17 +150,20 @@ This gives us a quick overview of the entire tier cover and changes at each site
 
 ```{r}
 #| label: tbl-getCoverComparison
-#| tbl-cap: "Benthic cover comparison of survey sites between two years"
+#| tbl-cap: "Modelled benthic cover comparison of Survey Sites between two years: 2009 and 2016"
 #| warning: false
 source("./R/get_cover_comparison.R")
 
 covercomparison <- get_cover_comparison(1705, years = c(2009, 2016))
 
-covercomparison_tbl <- covercomparison[1:10,]
+covercomparison_tbl <- covercomparison[1:10,] |> 
+  dplyr::mutate(depth = stringr::str_to_title(depth), cover_type = stringr::str_to_title(cover_type)) |> 
+  dplyr::select(-tier_id, - region_name, -year_first, -year_last, -n_sites) |> 
+  dplyr::relocate(row_type, .before = cover_type) 
 
 names(covercomparison_tbl) <- names(covercomparison_tbl) |> 
   gsub("_", " ", x = _) |>
-  str_to_title()
+  stringr::str_to_title()
 
 knitr::kable(covercomparison_tbl)
 ```
@@ -140,13 +174,17 @@ This gives us a similar table to the previous one, but instead of individual sit
 
 ```{r}
 #| label: tbl-getCoverComparisonLR
-#| tbl-cap: "Benthic cover comparison of survey sites between two years"
+#| tbl-cap: "Benthic cover comparison of local regions between two years"
 #| warning: false
 source("./R/get_cover_comparison_lr.R")
 
 covercomparisonlr <- get_cover_comparison_lr(1705, years = c(2009, 2016))
 
-covercomparisonlr_tbl <- covercomparisonlr[1:10,]
+covercomparisonlr_tbl <- covercomparisonlr |> 
+  dplyr::mutate(depth = str_to_title(depth), cover_type = str_to_title(cover_type))  |> 
+  dplyr::mutate(depth = stringr::str_to_title(depth), cover_type = stringr::str_to_title(cover_type)) |> 
+  dplyr::select(-tier_id, - region_name, -year_first, -year_last) |> 
+  dplyr::relocate(row_type, .before = cover_type) 
 
 names(covercomparisonlr_tbl) <- names(covercomparisonlr_tbl) |> 
   gsub("_", " ", x = _) |>
@@ -180,11 +218,11 @@ We can then present the proportions of sites in the different cover categories u
 #| warning: false
 source("./R/plot_donut.R")
 
-HC_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "HARD CORAL")
+HC_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "hard coral")
 
-MA_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "MACROALGAE")
+MA_donut_plot <- plot_donut(1705, year = 2016, depth = "shallow", cover_type = "macroalgae")
 
-HC_donut_plot + MA_donut_plot
+HC_donut_plot + MA_donut_plot + patchwork::plot_layout(ncol = 1) + patchwork::plot_annotation(tag_levels = "a")
 ```
 
 We can also plot the Hard Coral cover for each site at the latest year. This gives us an idea of how the hard coral cover varies across the different site and can highlight sites that may be doing poorly.
@@ -197,12 +235,23 @@ For this plot, there are a few options to specify other than tier ID which we ha
 #| warning: false
 source("./R/plot_site_cover.R")
 
-HC_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "HARD CORAL", depth = "shallow")
+HC_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "hard coral", depth = "shallow")
 
 HC_cover_plot$plot
+```
 
-HC_cover_tbl <- HC_cover_plot$df.sum[,1:10]
+If necessary, we can also display the values in a table. 
 
+```{r}
+#| label: tbl-plotHCCover
+#| tbl-cap: "Site-level Hard Coral cover across the region"
+#| warning: false
+HC_cover_tbl <- HC_cover_plot$df.sum[1:10,] |> 
+  dplyr::select(- date, -type_code, - low, - high) |> 
+  dplyr::mutate(depth = stringr::str_to_title(depth)) |> 
+  dplyr::mutate(type = stringr::str_to_title(type)) |> 
+  dplyr::rename(modelled_mean = mean, modelled_median = median)
+  
 names(HC_cover_tbl) <- names(HC_cover_tbl) |> 
   gsub("_", " ", x = _) |>
   str_to_title()
@@ -218,17 +267,9 @@ As an example. we also want to use plot_site_cover to plot the macroalgae cover 
 #| warning: false
 source("./R/plot_site_cover.R")
 
-MA_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "MACROALGAE", depth = "shallow")
+MA_cover_plot <- plot_site_cover(1705, year = 2016, cover_type = "macroalgae", depth = "shallow")
 
 MA_cover_plot$plot
-
-MA_cover_tbl <- MA_cover_plot$df.sum[,1:10]
-
-names(MA_cover_tbl) <- names(MA_cover_tbl) |> 
-  gsub("_", " ", x = _) |>
-  str_to_title()
-
-knitr::kable(MA_cover_tbl)
 ```
 
 We might also want to see how the site cover has changed over time. We can start by plotting the site cover for the initial surveys by changing the year value in the function to the first year the surveys were conducted in Palau which was 2002 (@fig-plotHCCoverPast).
@@ -239,17 +280,9 @@ We might also want to see how the site cover has changed over time. We can start
 #| warning: false
 source("./R/plot_site_cover.R")
 
-HC_cover_past_plot <- plot_site_cover(1705, year = 2004, cover_type = "HARD CORAL", depth = "shallow")
+HC_cover_past_plot <- plot_site_cover(1705, year = 2004, cover_type = "hard coral", depth = "shallow")
 
 HC_cover_past_plot$plot
-
-HC_cover_past_tbl <- HC_cover_past_plot$df.sum[,1:10]
-
-names(HC_cover_past_tbl) <- names(HC_cover_past_tbl) |> 
-  gsub("_", " ", x = _) |>
-  str_to_title()
-
-knitr::kable(HC_cover_past_tbl)
 ```
 
 Knowing just the site Hard Coral and Macroalgae cover may be useful for some sites, but we might also want to see the compositional cover, especially across all sites for an overview. To do this we can use the plot_site_composition function, specifying the Tier ID, Year and Depth to get the plot (@fig-plotSiteComposition).
@@ -260,9 +293,22 @@ Knowing just the site Hard Coral and Macroalgae cover may be useful for some sit
 #| warning: false
 source("./R/plot_site_composition.R")
 
-site_composition <- plot_site_composition(1705, year = 2016, depth = "shallow")
+site_composition <- plot_site_composition(1705, year = 2016, depth = "shallow", fill_by = "group_code")
 
 site_composition$plot
+```
+
+Similarly, we can also see the compositional change per year instead across the entire tier (@fig-plotYearComposition).
+
+```{r}
+#| label: fig-plotYearComposition
+#| fig-cap: "Yearly stacked composition across the tier"
+#| warning: false
+source("./R/plot_year_composition.R")
+
+year_composition <- plot_year_composition(1705, depth = "none", fill_by = "group_code")
+
+year_composition$plot
 ```
 
 With the differences in cover shown between 2002 and 2016, we want to see if there is a trend through time as well. We can do this using the plot_temporal_cover function that uses all the previous functions together to generate a table of mean cover through time, alongside some of the disturbances that have been tracked through time (@fig-plotHCTrend).
@@ -273,7 +319,7 @@ With the differences in cover shown between 2002 and 2016, we want to see if the
 #| warning: false
 source("./R/plot_temporal_cover.R")
 
-HC_trend_plot <- plot_temporal_cover(1705, cover_type = "HARD CORAL")
+HC_trend_plot <- plot_temporal_cover(1705, cover_type = "hard coral")
 
 HC_trend_plot$plot
 

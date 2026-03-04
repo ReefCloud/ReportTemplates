@@ -1,14 +1,14 @@
 # =============================================================
-# File: get_tiers_frombbox.r
+# File: get_tier_from_boundary.r
 # Description: Retrieves spatial tier boundaries from the ReefCloud API based on tier level and bounding box.
 # Author: Samuel Chan
 # Date: 2025-11-25
 # Dependencies: sf
 # =============================================================
 
-#' Retrieve Tier IDs and boundaries from ReefCloud API
+#' Retrieve Tier IDs from boundaries from ReefCloud API
 #'
-#' Retrieves spatial tier boundaries from the ReefCloud API based on a specified tier level and bounding box.
+#' Retrieves spatial tier from the ReefCloud API based on a specified tier level and bounding box.
 #'
 #' @param tier_level Integer. The tier level to retrieve (must be between 2 and 6, default = 4).
 #' @param bbox A named list or vector containing bounding box coordinates.
@@ -22,12 +22,12 @@
 #' @examples
 #' # Example usage:
 #' bbox <- list(xmin = 142, ymin = -20, xmax = 146, ymax = -18)
-#' tiers_sf <- get_tiers_frombbox(tier_level = 4, bbox = bbox)
+#' tiers_sf <- get_tier_from_boundary(tier_level = 4, bbox = bbox)
 #' print(tiers_sf)
 #'
 #' @export
 
-get_tier_boundary <- function(tier_level = 4, bbox) {
+get_tier_from_boundary <- function(tier_level = 4, bbox) {
   
   # Validate bbox using helper
   source("R/validate_bbox.R")

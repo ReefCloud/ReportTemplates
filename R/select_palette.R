@@ -19,8 +19,11 @@
 #'
 #' @examples
 #' select_palette("hc", use = "prop")
-#' select_palette("ma", use = "cat")
-#'
+#' 
+#' # Helper to pick palette by domain ('prop' or 'cat') and group ('hc', 'ma', 'sc')
+#' ggplot(df_prop, aes(x = cover_prop, y = value, fill = cover_prop)) +
+#'   geom_col() +
+#'   scale_fill_manual(values = select_palette("hc", use = "prop")) +
 #' @export select_palette
 
 select_palette <- function(group = c("hc", "ma", "sc"), use = c("prop", "cat")) {

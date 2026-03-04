@@ -26,9 +26,9 @@
 #'
 #' @param tier_id Character or numeric. Region/tier identifier used by your helpers.
 #' @param years Optional numeric length-2 vector. If omitted, uses c(min(year), max(year)).
-#' @param cover_type Character. One of "HARD CORAL", "MACROALGAE", "SOFT CORAL",
-#'        "TURF ALGAE", "CRUSTOSE CORALLINE ALGAE", "OTHER". Default "HARD CORAL".
-#' @param depth Character. One of "shallow", "deep". Default "shallow".
+#' @param cover_type Character. One of "hard coral", "macroalgae", "soft coral",
+#'        "turf algae", "crustose coralline algae", "other". Default "hard coral".
+#' @param depth Character. One of "shallow", "deep" or "none. Default "shallow".
 #'
 #' @return A tibble with the columns described above. Each **site** that has
 #'         both years contributes **one row**; the **tier** contributes one row.
@@ -36,7 +36,7 @@
 #' @examples
 #' \dontrun{
 #' tab <- get_cover_comparison(1705)
-#' tab_ma <- get_cover_comparison(1705, cover_type = "MACROALGAE", depth = "deep")
+#' tab_ma <- get_cover_comparison(1705, cover_type = "macroalgae", depth = "deep")
 #' tab_custom <- get_cover_comparison(1705, years = c(2009, 2016))
 #' }
 #'
@@ -44,7 +44,7 @@
 #' @export
 get_cover_comparison <- function(tier_id,
                                  years = NULL,
-                                 cover_type = "HARD CORAL",
+                                 cover_type = "hard coral",
                                  depth = "shallow") {
   # ---- Load required helpers ----------------------------------------------
   source("R/get_regional_summary.R")
@@ -55,9 +55,8 @@ get_cover_comparison <- function(tier_id,
   if (missing(tier_id) || length(tier_id) != 1) {
     stop("`tier_id` must be length-1 (character or numeric).", call. = FALSE)
   }
-  cover_type <- toupper(cover_type)
-  allowed_types <- c("HARD CORAL", "MACROALGAE", "SOFT CORAL",
-                     "TURF ALGAE", "CRUSTOSE CORALLINE ALGAE", "OTHER")
+  allowed_types <- c("hard coral", "macroalgae", "soft coral",
+                     "turf algae", "crustose coralline algae", "other")
   if (!cover_type %in% allowed_types) {
     stop("`cover_type` must be one of: ", paste(allowed_types, collapse = ", "), call. = FALSE)
   }
@@ -65,8 +64,8 @@ get_cover_comparison <- function(tier_id,
     stop("`depth` must be a single string.", call. = FALSE)
   }
   depth <- tolower(depth)
-  if (!depth %in% c("shallow", "deep")) {
-    stop("`depth` must be either 'shallow' or 'deep'.", call. = FALSE)
+  if (!depth %in% c("shallow", "deep", "none")) {
+    stop("`depth` must be either 'shallow', 'deep' or 'none'.", call. = FALSE)
   }
   if (!is.null(years)) {
     if (length(years) != 2L || any(!is.finite(years))) {
